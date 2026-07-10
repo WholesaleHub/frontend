@@ -112,6 +112,7 @@ export default function RegisterPage() {
               placeholder="Enter your full name"
               value={formData.fullName}
               onChange={handleChange}
+              required
             />
             <small className="error">{errors.fullName}</small>
           </div>
@@ -140,6 +141,7 @@ export default function RegisterPage() {
               placeholder="Enter email address"
               value={formData.email}
               onChange={handleChange}
+              required
             />
             <small className="error">{errors.email}</small>
           </div>
@@ -168,6 +170,7 @@ export default function RegisterPage() {
               placeholder="Confirm password"
               value={formData.confirmPassword}
               onChange={handleChange}
+              required
             />
             <small className="error">
               {errors.confirmPassword}
