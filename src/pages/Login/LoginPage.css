@@ -95,6 +95,16 @@ body {
   min-height: 18px;
 }
 
+.server-error {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 0.6rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
 .forgot-password {
   text-align: right;
   margin-bottom: 1rem;
@@ -126,6 +136,11 @@ body {
 
 .login-btn:hover {
   background-color: #1d4ed8;
+}
+
+.login-btn:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
 }
 
 .signup-link {
