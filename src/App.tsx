@@ -1,6 +1,15 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import RegisterPage from "./pages/Register/RegisterPage";
 import LoginPage from "./pages/Login/LoginPage";
+import WholesalerDashboard from "./pages/dashboards/WholesalerDashboard";
+import WholesalerProducts from "./pages/wholesaler/WholesalerProducts";
+import WholesalerOrders from "./pages/wholesaler/WholesalerOrders";
+import WholesalerReports from "./pages/wholesaler/WholesalerReports";
+import CustomerDashboard from "./pages/dashboards/CustomerDashboard";
+import CustomerBrowse from "./pages/customer/CustomerBrowse";
+import CustomerOrders from "./pages/customer/CustomerOrders";
+import ProfilePage from "./pages/ProfilePage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -8,6 +17,73 @@ function App() {
       <Routes>
         <Route path="/" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
+
+        <Route
+          path="/dashboard/wholesaler"
+          element={
+            <ProtectedRoute allowedRoles={["wholesaler"]}>
+              <WholesalerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/wholesaler/products"
+          element={
+            <ProtectedRoute allowedRoles={["wholesaler"]}>
+              <WholesalerProducts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/wholesaler/orders"
+          element={
+            <ProtectedRoute allowedRoles={["wholesaler"]}>
+              <WholesalerOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/wholesaler/reports"
+          element={
+            <ProtectedRoute allowedRoles={["wholesaler"]}>
+              <WholesalerReports />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/customer"
+          element={
+            <ProtectedRoute allowedRoles={["customer"]}>
+              <CustomerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/customer/browse"
+          element={
+            <ProtectedRoute allowedRoles={["customer"]}>
+              <CustomerBrowse />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/customer/orders"
+          element={
+            <ProtectedRoute allowedRoles={["customer"]}>
+              <CustomerOrders />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
