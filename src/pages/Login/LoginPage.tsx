@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import "./LoginPage.css";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { loginUser } from "../../services/authService";
+import { useAuth } from "../../context/AuthContext";
 
 type FormData = {
   email: string;
@@ -14,38 +15,23 @@ type FormErrors = {
 };
 
 export default function LoginPage() {
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
-    password: "",
-  });
-
-  const [errors, setErrors] = useState<FormErrors>({
-    email: "",
-    password: "",
-  });
-
+  const [formData, setFormData] = useState<FormData>({ email: "", password: "" });
+  const [errors, setErrors] = useState<FormErrors>({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
 
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    setErrors((prev) => ({
-      ...prev,
-      [name]: "",
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validateForm = () => {
-    const newErrors: FormErrors = {
-      email: "",
-      password: "",
-    };
+    const newErrors: FormErrors = { email: "", password: "" };
 
     if (!formData.email.trim()) {
       newErrors.email = "Email Address is required";
@@ -62,89 +48,124 @@ export default function LoginPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setServerError("");
+    e.preventDefault();
+    setServerError("");
 
-  if (!validateForm()) {
-    return;
-  }
+    if (!validateForm()) return;
 
-  setIsSubmitting(true);
-
-  try {
-    const data = await loginUser({
-      email: formData.email,
-      password: formData.password,
-    });
-    console.log("Login successful:", data);
-    // Next task: store token, redirect to dashboard
-  } catch (error) {
-    if (error instanceof Error) {
-      setServerError(error.message);
-    } else {
-      setServerError("An unexpected error occurred.");
+    setIsSubmitting(true);
+    try {
+      const data = await loginUser({ email: formData.email, password: formData.password });
+      login(data.user, data.token);
+      navigate(`/dashboard/${data.user.role}`);
+    } catch (error) {
+      setServerError(error instanceof Error ? error.message : "An unexpected error occurred.");
+    } finally {
+      setIsSubmitting(false);
     }
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <h1>Welcome Back</h1>
-        <p>Sign in to your WholesaleHub account</p>
-        {serverError && <p className="server-error">{serverError}</p>}
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="form-group">
-            <label htmlFor="email">Email Address</label>
+    <div
+  className="min-h-screen relative flex items-center justify-center overflow-y-auto px-4 py-8">
+      <div className="bg-white w-full max-w-md rounded-lg shadow-md p-8">
+        <h1 className="text-2xl font-bold mb-2 text-center">Welcome Back</h1>
+        <p className="text-center text-gray-500 mb-6">Sign in to your WholesaleHub account</p>
+
+        {serverError && (
+          <p className="bg-red-100 text-red-700 text-sm p-2 rounded mb-4">{serverError}</p>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+          <div>
+            <label className="block text-sm font-medium mb-1">Email</label>
             <input
-              id="email"
               type="email"
               name="email"
-              placeholder="Enter email address"
               value={formData.email}
               onChange={handleChange}
-              required
+              className={`w-full border rounded p-2 ${errors.email ? "border-red-500" : ""}`}
+              placeholder="you@example.com"
             />
-            <small className="error">{errors.email}</small>
+            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <div className="password-wrapper">
+          <div>
+            <label className="block text-sm font-medium mb-1">Password</label>
+            <div className="relative">
               <input
-                id="password"
                 type={showPassword ? "text" : "password"}
                 name="password"
-                placeholder="Enter password"
                 value={formData.password}
                 onChange={handleChange}
-                required
+                className={`w-full border rounded p-2 pr-10 ${errors.password ? "border-red-500" : ""}`}
+                placeholder="••••••••"
               />
               <button
                 type="button"
-                className="toggle-password"
                 onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
               >
-                {showPassword ? "Hide" : "Show"}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            <small className="error">{errors.password}</small>
+            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
           </div>
 
-          <div className="forgot-password">
-            <Link to="/forgot-password">Forgot password?</Link>
+          <div className="text-right -mt-2">
+            <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
+              Forgot password?
+            </Link>
           </div>
 
-          <button type="submit" className="login-btn" disabled={isSubmitting}>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="bg-blue-600 text-white font-semibold py-2 rounded mt-2 hover:bg-blue-700 transition disabled:bg-blue-300 disabled:cursor-not-allowed"
+          >
             {isSubmitting ? "Signing in..." : "Sign In"}
           </button>
-
-          <p className="signup-link">
-            Don't have an account? <Link to="/">Create Account</Link>
-          </p>
         </form>
+
+        {/* TEMPORARY — remove before real integration */}
+        <div className="mt-4 border-t border-dashed pt-4">
+          <p className="text-xs text-gray-400 mb-2">Dev testing shortcuts:</p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                login(
+                  { id: "1", fullName: "Test Wholesaler", email: "test@wholesaler.com", role: "wholesaler" },
+                  "fake-token-123"
+                );
+                navigate("/dashboard/wholesaler");
+              }}
+              className="text-xs bg-gray-200 px-2 py-1 rounded"
+            >
+              Fake Login as Wholesaler
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                login(
+                  { id: "2", fullName: "Test Customer", email: "test@customer.com", role: "customer" },
+                  "fake-token-456"
+                );
+                navigate("/dashboard/customer");
+              }}
+              className="text-xs bg-gray-200 px-2 py-1 rounded"
+            >
+              Fake Login as Customer
+            </button>
+          </div>
+        </div>
+
+        <p className="text-sm text-center mt-4 text-gray-600">
+          Don't have an account?{" "}
+          <Link to="/" className="text-blue-600 font-medium hover:underline">
+            Register
+          </Link>
+        </p>
       </div>
     </div>
   );
