@@ -1,6 +1,6 @@
 import { useState } from "react";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { customerNavItems } from "../../config/customerNav";
+import { retailerNavItems } from "../../config/retailerNav";
 import { statusColors } from "../../config/orderStatusColors";
 
 const allOrders = [
@@ -13,7 +13,7 @@ const allOrders = [
 
 const statusOptions = ["All", "Pending", "Approved", "Dispatched", "Completed", "Cancelled"];
 
-function CustomerOrders() {
+function RetailerOrders() {
   const [statusFilter, setStatusFilter] = useState("All");
 
   const filtered = allOrders.filter(
@@ -21,7 +21,7 @@ function CustomerOrders() {
   );
 
   return (
-    <DashboardLayout navItems={customerNavItems}>
+    <DashboardLayout navItems={retailerNavItems}>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-[#003049]">My Orders</h1>
         <select
@@ -75,4 +75,4 @@ function CustomerOrders() {
   );
 }
 
-export default CustomerOrders;
+export default RetailerOrders;

@@ -56,8 +56,8 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       const data = await loginUser({ email: formData.email, password: formData.password });
-      login(data.user, data.token);
-      navigate(`/dashboard/${data.user.role}`);
+      login(data.user, data.accessToken);
+      navigate(`/dashboard/${data.user.role.toLowerCase()}`);
     } catch (error) {
       setServerError(error instanceof Error ? error.message : "An unexpected error occurred.");
     } finally {
@@ -148,14 +148,14 @@ export default function LoginPage() {
               type="button"
               onClick={() => {
                 login(
-                  { id: "2", fullName: "Test Customer", email: "test@customer.com", role: "customer" },
+                  { id: "2", fullName: "Test Retailer", email: "test@retailer.com", role: "retailer" },
                   "fake-token-456"
                 );
-                navigate("/dashboard/customer");
+                navigate("/dashboard/retailer");
               }}
               className="text-xs bg-gray-200 px-2 py-1 rounded"
             >
-              Fake Login as Customer
+              Fake Login as Retailer
             </button>
           </div>
         </div>
