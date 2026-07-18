@@ -54,7 +54,7 @@ function App() {
         <Route
           path="/dashboard/retailer"
           element={
-            <ProtectedRoute allowedRoles={["retailer"]}>
+            <ProtectedRoute allowedRoles={["RETAILER"]}>
               <RetailerDashboard />
             </ProtectedRoute>
           }
@@ -62,7 +62,7 @@ function App() {
         <Route
           path="/dashboard/retailer/browse"
           element={
-            <ProtectedRoute allowedRoles={["retailer"]}>
+            <ProtectedRoute allowedRoles={["RETAILER"]}>
               <RetailerBrowse />
             </ProtectedRoute>
           }
@@ -70,7 +70,7 @@ function App() {
         <Route
           path="/dashboard/retailer/orders"
           element={
-            <ProtectedRoute allowedRoles={["retailer"]}>
+            <ProtectedRoute allowedRoles={["RETAILER"]}>
               <RetailerOrders />
             </ProtectedRoute>
           }

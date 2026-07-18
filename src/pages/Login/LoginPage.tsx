@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { loginUser } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
+import logo from "../../assets/logo.svg";
 
 type FormData = {
   email: string;
@@ -66,10 +67,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-  className="min-h-screen relative flex items-center justify-center overflow-y-auto px-4 py-8">
-      <div className="bg-white w-full max-w-md rounded-lg shadow-md p-8">
-        <h1 className="text-2xl font-bold mb-2 text-center">Welcome Back</h1>
+    
+    <div className="min-h-screen bg-[#003049] px-4 py-8">
+  <div className="flex items-center gap-2 mb-8">
+    <img src={logo} alt="WholesaleHub" className="w-10 h-10" />
+    <span className="text-white font-bold text-lg">WholesaleHub</span>
+  </div>
+
+  <div className="flex items-center justify-center">
+    <div className="bg-white w-full max-w-md rounded-lg shadow-md p-8">
+        <h1 className="text-2xl font-bold mb-2 text-center text-[#003049]">Welcome Back</h1>
         <p className="text-center text-gray-500 mb-6">Sign in to your WholesaleHub account</p>
 
         {serverError && (
@@ -113,7 +120,7 @@ export default function LoginPage() {
           </div>
 
           <div className="text-right -mt-2">
-            <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
+            <Link to="/forgot-password" className="text-sm text-[#f77f00] hover:underline">
               Forgot password?
             </Link>
           </div>
@@ -121,8 +128,8 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-blue-600 text-white font-semibold py-2 rounded mt-2 hover:bg-blue-700 transition disabled:bg-blue-300 disabled:cursor-not-allowed"
-          >
+            className="bg-[#f77f00] text-white font-semibold py-2 rounded mt-2 hover:bg-[#d62828] transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
             {isSubmitting ? "Signing in..." : "Sign In"}
           </button>
         </form>
@@ -148,7 +155,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => {
                 login(
-                  { id: "2", fullName: "Test Retailer", email: "test@retailer.com", role: "retailer" },
+                  { id: "2", fullName: "Test Retailer", email: "test@retailer.com", role: "RETAILER" },
                   "fake-token-456"
                 );
                 navigate("/dashboard/retailer");
@@ -162,10 +169,11 @@ export default function LoginPage() {
 
         <p className="text-sm text-center mt-4 text-gray-600">
           Don't have an account?{" "}
-          <Link to="/" className="text-blue-600 font-medium hover:underline">
+          <Link to="/" className="text-[#f77f00] font-medium hover:underline">
             Register
           </Link>
         </p>
+      </div>
       </div>
     </div>
   );
