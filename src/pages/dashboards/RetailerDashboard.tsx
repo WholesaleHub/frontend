@@ -1,7 +1,7 @@
 import { ShoppingBag, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { customerNavItems } from "../../config/customerNav";
+import { retailerNavItems } from "../../config/retailerNav";
 import { statusColors } from "../../config/orderStatusColors";
 
 const stats = [
@@ -17,13 +17,13 @@ const recentOrders = [
   { id: 3, items: 5, total: "Ksh 8,900", status: "Completed", date: "2026-07-10" },
 ];
 
-function CustomerDashboard() {
+function RetailerDashboard() {
   return (
-    <DashboardLayout navItems={customerNavItems}>
+    <DashboardLayout navItems={retailerNavItems}>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-[#003049]">Overview</h1>
         <Link
-          to="/dashboard/customer/browse"
+          to="/dashboard/retailer/browse"
           className="flex items-center gap-2 bg-[#f77f00] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#d62828] transition-colors"
         >
           <ShoppingBag size={16} />
@@ -44,7 +44,7 @@ function CustomerDashboard() {
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-semibold text-[#003049]">Recent Orders</h2>
           <Link
-            to="/dashboard/customer/orders"
+            to="/dashboard/retailer/orders"
             className="text-sm text-[#f77f00] font-medium hover:underline flex items-center gap-1"
           >
             <Eye size={14} />
@@ -82,4 +82,4 @@ function CustomerDashboard() {
   );
 }
 
-export default CustomerDashboard;
+export default RetailerDashboard;

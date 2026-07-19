@@ -2,9 +2,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export type RegisterPayload = {
   fullName: string;
-  businessName?: string;
   email: string;
   password: string;
+  phone?: string;
 };
 
 export type LoginPayload = {
@@ -13,12 +13,15 @@ export type LoginPayload = {
 };
 
 export type AuthResponse = {
-  token: string;
+  message: string;
+  accessToken: string;
   user: {
     id: string;
     fullName: string;
     email: string;
+    phone: string | null;
     role: string;
+    status: string;
   };
 };
 

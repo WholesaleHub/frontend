@@ -3,7 +3,7 @@ import { User, Mail, Building2, Save } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { wholesalerNavItems } from "../config/wholesalerNav";
-import { customerNavItems } from "../config/customerNav";
+import { retailerNavItems } from "../config/retailerNav";
 
 function ProfilePage() {
   const { user } = useAuth();
@@ -13,7 +13,7 @@ function ProfilePage() {
   const [businessName, setBusinessName] = useState(user?.businessName || "");
   const [saved, setSaved] = useState(false);
 
-  const navItems = user?.role === "wholesaler" ? wholesalerNavItems : customerNavItems;
+  const navItems = user?.role === "wholesaler" ? wholesalerNavItems : retailerNavItems;
 
   const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

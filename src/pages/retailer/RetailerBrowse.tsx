@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Search, ShoppingCart } from "lucide-react";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { customerNavItems } from "../../config/customerNav";
+import { retailerNavItems } from "../../config/retailerNav";
 
 const availableProducts = [
   { id: 1, name: "Milk", price: "Ksh 30", quantity: 100 },
@@ -11,7 +11,7 @@ const availableProducts = [
   { id: 5, name: "Flour 2kg", price: "Ksh 180", quantity: 60 },
 ];
 
-function CustomerBrowse() {
+function RetailerBrowse() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const filtered = availableProducts.filter((p) =>
@@ -19,7 +19,7 @@ function CustomerBrowse() {
   );
 
   return (
-    <DashboardLayout navItems={customerNavItems}>
+    <DashboardLayout navItems={retailerNavItems}>
       <h1 className="text-2xl font-bold text-[#003049] mb-6">Browse Products</h1>
 
       <div className="bg-white rounded-lg shadow p-4 mb-6 max-w-sm">
@@ -60,4 +60,4 @@ function CustomerBrowse() {
   );
 }
 
-export default CustomerBrowse;
+export default RetailerBrowse;

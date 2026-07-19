@@ -5,9 +5,9 @@ import WholesalerDashboard from "./pages/dashboards/WholesalerDashboard";
 import WholesalerProducts from "./pages/wholesaler/WholesalerProducts";
 import WholesalerOrders from "./pages/wholesaler/WholesalerOrders";
 import WholesalerReports from "./pages/wholesaler/WholesalerReports";
-import CustomerDashboard from "./pages/dashboards/CustomerDashboard";
-import CustomerBrowse from "./pages/customer/CustomerBrowse";
-import CustomerOrders from "./pages/customer/CustomerOrders";
+import RetailerDashboard from "./pages/dashboards/RetailerDashboard";
+import RetailerBrowse from "./pages/retailer/RetailerBrowse";
+import RetailerOrders from "./pages/retailer/RetailerOrders";
 import ProfilePage from "./pages/ProfilePage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -52,26 +52,26 @@ function App() {
         />
 
         <Route
-          path="/dashboard/customer"
+          path="/dashboard/retailer"
           element={
-            <ProtectedRoute allowedRoles={["customer"]}>
-              <CustomerDashboard />
+            <ProtectedRoute allowedRoles={["RETAILER"]}>
+              <RetailerDashboard />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/dashboard/customer/browse"
+          path="/dashboard/retailer/browse"
           element={
-            <ProtectedRoute allowedRoles={["customer"]}>
-              <CustomerBrowse />
+            <ProtectedRoute allowedRoles={["RETAILER"]}>
+              <RetailerBrowse />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/dashboard/customer/orders"
+          path="/dashboard/retailer/orders"
           element={
-            <ProtectedRoute allowedRoles={["customer"]}>
-              <CustomerOrders />
+            <ProtectedRoute allowedRoles={["RETAILER"]}>
+              <RetailerOrders />
             </ProtectedRoute>
           }
         />
