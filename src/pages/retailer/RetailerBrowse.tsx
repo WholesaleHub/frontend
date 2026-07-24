@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Search, ShoppingCart } from "lucide-react";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { retailerNavItems } from "../../config/retailerNav";
+import { Link } from "react-router-dom";
 
 const availableProducts = [
   { id: 1, name: "Milk", price: "Ksh 30", quantity: 100 },
@@ -40,7 +41,9 @@ function RetailerBrowse() {
           const outOfStock = product.quantity <= 0;
           return (
             <div key={product.id} className="bg-white rounded-lg shadow p-4">
-              <h2 className="font-semibold text-[#003049]">{product.name}</h2>
+              <Link to={`/products/${product.id}`} className="hover:underline">
+                <h2 className="font-semibold text-[#003049]">{product.name}</h2>
+              </Link>
               <p className="text-[#f77f00] font-semibold mt-1">{product.price}</p>
               <p className={`text-sm mt-1 ${outOfStock ? "text-red-500 font-medium" : "text-gray-500"}`}>
                 {outOfStock ? "Out of stock" : `${product.quantity} available`}

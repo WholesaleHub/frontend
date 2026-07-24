@@ -142,7 +142,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => {
                 login(
-                  { id: "1", fullName: "Test Wholesaler", email: "test@wholesaler.com", role: "wholesaler" },
+                  { id: "1", fullName: "Test Wholesaler", email: "test@wholesaler.com", role: "WHOLESALER" },
                   "fake-token-123"
                 );
                 navigate("/dashboard/wholesaler");

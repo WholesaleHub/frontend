@@ -26,11 +26,22 @@ function DashboardLayout({ children, navItems }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen flex bg-[#f5f7fb]">
+    <div className="min-h-screen flex bg-[#f5f7fb] relative">
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-black/40 z-30 md:hidden"
+        />
+      )}
+
+      {/* Sidebar */}
       <aside
-        className={`bg-[#003049] text-white transition-all duration-300 ${
-          sidebarOpen ? "w-64" : "w-0"
-        } overflow-hidden flex flex-col`}
+        className={`bg-[#003049] text-white flex flex-col
+          fixed md:static inset-y-0 left-0 z-40
+          w-64 transition-transform duration-300
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-0 md:overflow-hidden"}
+        `}
       >
         <div className="p-4 border-b border-white/10">
           <h2 className="text-lg font-bold text-[#fcbf49]">WholesaleHub</h2>
