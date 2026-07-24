@@ -9,6 +9,7 @@ export type Category = {
 export type StockStatus = "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
 
 export type Product = {
+<<<<<<< HEAD
   product_id: number;
   product_name: string;
   sku: string;
@@ -28,6 +29,15 @@ export type CreateProductPayload = {
   unit_price: number;
   stock_quantity: number;
   status?: string;
+=======
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image?: string;
+  category: string;
+  stock: number;
+>>>>>>> c048ca97da5559f1cfc24892fdfb7340bdfbb395
 };
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -36,15 +46,22 @@ async function handleResponse<T>(response: Response): Promise<T> {
   }
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
+<<<<<<< HEAD
     throw new Error(errorData?.message || "Something went wrong. Please try again.");
+=======
+
+    throw new Error(
+      errorData?.message || "Something went wrong while processing your request."
+    );
+>>>>>>> c048ca97da5559f1cfc24892fdfb7340bdfbb395
   }
+
   return response.json();
 }
 
-export async function getProducts(token: string): Promise<Product[]> {
-  const response = await fetch(`${API_BASE_URL}/products`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function getProducts(): Promise<Product[]> {
+  const response = await fetch(`${API_BASE_URL}/products`);
+
   return handleResponse<Product[]>(response);
 }
 
@@ -61,16 +78,29 @@ export async function createProduct(token: string, product: CreateProductPayload
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify(product),
   });
+
   return handleResponse<Product>(response);
 }
 
+<<<<<<< HEAD
 export async function deleteProduct(token: string, productId: number): Promise<void> {
+=======
+export async function deleteProduct(
+  token: string,
+  productId: string
+): Promise<void> {
+>>>>>>> c048ca97da5559f1cfc24892fdfb7340bdfbb395
   const response = await fetch(`${API_BASE_URL}/products/${productId}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
-    throw new Error(errorData?.message || "Failed to delete product.");
+
+    throw new Error(
+      errorData?.message || "Failed to delete product."
+    );
   }
 }
