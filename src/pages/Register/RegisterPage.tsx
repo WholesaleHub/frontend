@@ -11,7 +11,7 @@ type FormData = {
   password: string;
   confirmPassword: string;
   agreedToTerms: boolean;
-  role: "WHOLESALER" | "RETAILER" | "";
+  role: "WHOLESALER" | "RETAILER";
 };
 
 type FormErrors = {
@@ -40,7 +40,7 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
     agreedToTerms: false,
-    role: "",
+    role: "RETAILER",
   });
 
   const [errors, setErrors] = useState<FormErrors>({
@@ -50,7 +50,7 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
     agreedToTerms: "",
-    role: "",
+    role: "RETAILER",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -114,7 +114,7 @@ export default function RegisterPage() {
     }
 
     if (!formData.role) {
-      newErrors.role = "Please select a role";
+      newErrors.role = "Please select an account type.";
     }
 
     setErrors(newErrors);
@@ -135,6 +135,7 @@ export default function RegisterPage() {
         email: formData.email,
         password: formData.password,
         phone: formData.phone.trim() || undefined,
+        role: formData.role,
       });
 
       setSuccessMessage("Account created successfully! Redirecting to login...");
@@ -145,7 +146,7 @@ export default function RegisterPage() {
         password: "",
         confirmPassword: "",
         agreedToTerms: false,
-        role: "",
+        role: "RETAILER",
       });
 
       setTimeout(() => navigate("/login"), 1500);

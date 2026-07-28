@@ -1,4 +1,7 @@
+import { extractErrorMessage } from "../utils/apiError";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+export const BACKEND_ORIGIN = import.meta.env.VITE_BACKEND_ORIGIN;
 
 export type Category = {
   category_id: number;
@@ -9,60 +12,77 @@ export type Category = {
 export type StockStatus = "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
 
 export type Product = {
-<<<<<<< HEAD
   product_id: number;
   product_name: string;
   sku: string;
   category_id: number;
-  unit_price: string; // Prisma Decimal serializes as a string over JSON
+  unit_price: string;
   stock_quantity: number;
+  image_url: string | null;
+  description: string | null;
   status: string;
   created_at: string;
   category?: Category;
   stock_status: StockStatus;
 };
 
-export type CreateProductPayload = {
+export type ProductListMeta = { total: number; page: number; limit: number; totalPages: number };
+export type ProductListResponse = { data: Product[]; meta: ProductListMeta };
+
+export type ProductQueryParams = {
+  search?: string;
+  category?: number;
+  availability?: string;
+  page?: number;
+  limit?: number;
+};
+
+export type ProductFormFields = {
   product_name: string;
   sku: string;
   category_id: number;
   unit_price: number;
   stock_quantity: number;
   status?: string;
-=======
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image?: string;
-  category: string;
-  stock: number;
->>>>>>> c048ca97da5559f1cfc24892fdfb7340bdfbb395
+  description?: string;
 };
 
+export function resolveImageUrl(image_url: string | null | undefined): string | null {
+  if (!image_url) return null;
+  if (image_url.startsWith("http")) return image_url;
+  return `${BACKEND_ORIGIN}${image_url}`;
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
-  if (response.status === 404) {
-    throw new Error("Product not found.");
-  }
+  if (response.status === 404) throw new Error("Product not found.");
   if (!response.ok) {
-    const errorData = await response.json().catch(() => null);
-<<<<<<< HEAD
-    throw new Error(errorData?.message || "Something went wrong. Please try again.");
-=======
-
-    throw new Error(
-      errorData?.message || "Something went wrong while processing your request."
-    );
->>>>>>> c048ca97da5559f1cfc24892fdfb7340bdfbb395
+    throw new Error(await extractErrorMessage(response, "Something went wrong. Please try again."));
   }
-
   return response.json();
 }
 
-export async function getProducts(): Promise<Product[]> {
-  const response = await fetch(`${API_BASE_URL}/products`);
+export async function getProducts(token: string, params?: ProductQueryParams): Promise<ProductListResponse> {
+  const query = new URLSearchParams();
+  if (params?.search) query.set("search", params.search);
+  if (params?.category) query.set("category", String(params.category));
+  if (params?.availability) query.set("availability", params.availability);
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.limit) query.set("limit", String(params.limit));
+  const qs = query.toString();
 
-  return handleResponse<Product[]>(response);
+  const response = await fetch(`${API_BASE_URL}/products${qs ? `?${qs}` : ""}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const result = await handleResponse<unknown>(response);
+
+  if (result && typeof result === "object" && Array.isArray((result as ProductListResponse).data)) {
+    return result as ProductListResponse;
+  }
+  if (Array.isArray(result)) {
+    return { data: result as Product[], meta: { total: result.length, page: 1, limit: result.length, totalPages: 1 } };
+  }
+  console.error("Unexpected response shape from GET /products:", result);
+  throw new Error("Unexpected response format from the server. Please contact the backend team.");
 }
 
 export async function getProductById(id: string | number, token: string): Promise<Product> {
@@ -72,35 +92,52 @@ export async function getProductById(id: string | number, token: string): Promis
   return handleResponse<Product>(response);
 }
 
-export async function createProduct(token: string, product: CreateProductPayload): Promise<Product> {
+function buildFormData(fields: Partial<ProductFormFields>, imageFile?: File | null): FormData {
+  const form = new FormData();
+  if (fields.product_name !== undefined) form.append("product_name", fields.product_name);
+  if (fields.sku !== undefined) form.append("sku", fields.sku);
+  if (fields.category_id !== undefined) form.append("category_id", String(fields.category_id));
+  if (fields.unit_price !== undefined) form.append("unit_price", String(fields.unit_price));
+  if (fields.stock_quantity !== undefined) form.append("stock_quantity", String(fields.stock_quantity));
+  if (fields.status !== undefined) form.append("status", fields.status);
+  if (fields.description !== undefined) form.append("description", fields.description);
+  if (imageFile) form.append("image", imageFile);
+  return form;
+}
+
+export async function createProduct(
+  token: string,
+  fields: ProductFormFields,
+  imageFile?: File | null
+): Promise<Product> {
   const response = await fetch(`${API_BASE_URL}/products`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify(product),
+    headers: { Authorization: `Bearer ${token}` },
+    body: buildFormData(fields, imageFile),
   });
-
   return handleResponse<Product>(response);
 }
 
-<<<<<<< HEAD
-export async function deleteProduct(token: string, productId: number): Promise<void> {
-=======
-export async function deleteProduct(
+export async function updateProduct(
   token: string,
-  productId: string
-): Promise<void> {
->>>>>>> c048ca97da5559f1cfc24892fdfb7340bdfbb395
+  productId: number,
+  fields: Partial<ProductFormFields>,
+  imageFile?: File | null
+): Promise<Product> {
+  const response = await fetch(`${API_BASE_URL}/products/${productId}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: buildFormData(fields, imageFile),
+  });
+  return handleResponse<Product>(response);
+}
+
+export async function deleteProduct(token: string, productId: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/products/${productId}`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Authorization: `Bearer ${token}` },
   });
   if (!response.ok) {
-    const errorData = await response.json().catch(() => null);
-
-    throw new Error(
-      errorData?.message || "Failed to delete product."
-    );
+    throw new Error(await extractErrorMessage(response, "Failed to delete product."));
   }
 }
