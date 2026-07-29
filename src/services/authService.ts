@@ -1,3 +1,5 @@
+import { extractErrorMessage } from "../utils/apiError";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export type RegisterPayload = {
@@ -5,6 +7,7 @@ export type RegisterPayload = {
   email: string;
   password: string;
   phone?: string;
+  role: "WHOLESALER" | "RETAILER";
 };
 
 export type LoginPayload = {
@@ -27,8 +30,7 @@ export type AuthResponse = {
 
 async function handleResponse(response: Response): Promise<AuthResponse> {
   if (!response.ok) {
-    const errorData = await response.json().catch(() => null);
-    throw new Error(errorData?.message || "Something went wrong. Please try again.");
+    throw new Error(await extractErrorMessage(response, "Something went wrong. Please try again."));
   }
   return response.json();
 }
