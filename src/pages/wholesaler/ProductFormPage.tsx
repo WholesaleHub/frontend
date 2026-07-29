@@ -29,10 +29,24 @@ export default function ProductFormPage() {
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [
+  removeExistingImage,
+  setRemoveExistingImage,
+] = useState(false);
+  
 
   const [isLoading, setIsLoading] = useState(isEditMode);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  const MAX_IMAGE_SIZE = 15 * 1024 * 1024;
+
+const ALLOWED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+];
+
 
   useEffect(() => {
     async function init() {
@@ -50,6 +64,7 @@ export default function ProductFormPage() {
           setStatus(product.status);
           setDescription(product.description ?? "");
           setImagePreview(resolveImageUrl(product.image_url));
+          setRemoveExistingImage(false);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load form data.");
@@ -59,12 +74,42 @@ export default function ProductFormPage() {
     }
     init();
   }, [token, id, isEditMode]);
+  useEffect(() => {
+  return () => {
+    if (imagePreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(imagePreview);
+    }
+  };
+}, [imagePreview]);
 
   function handleImageSelect(file: File | null) {
-    if (!file) return;
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
+  setError("");
+
+  if (!file) return;
+
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    setError("Please select a JPG, PNG, or WebP image.");
+    return;
   }
+
+  if (file.size > MAX_IMAGE_SIZE) {
+    setError("The product image must not exceed 15 MB.");
+    return;
+  }
+
+  setRemoveExistingImage(false);
+  setImageFile(file);
+  setImagePreview(URL.createObjectURL(file));
+}
+
+  function handleRemovePreview() {
+  setImageFile(null);
+  setImagePreview(null);
+
+  if (isEditMode) {
+    setRemoveExistingImage(true);
+  }
+}
 
   async function handleAddCategory() {
     if (!token || !newCategoryName.trim()) return;
@@ -83,17 +128,55 @@ export default function ProductFormPage() {
     e.preventDefault();
     if (!token) return;
     setError("");
+    const trimmedName = name.trim();
+    const trimmedSku = sku.trim();
+    const numericCategoryId = Number(categoryId);
+    const numericPrice = Number(price);
+    const numericQuantity = Number(quantity);
+
+if (!trimmedName) {
+  setError("Product name is required.");
+  return;
+}
+
+if (!trimmedSku) {
+  setError("SKU is required.");
+  return;
+}
+
+if (!categoryId || !Number.isInteger(numericCategoryId)) {
+  setError("Please select a valid category.");
+  return;
+}
+
+if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
+  setError("Price must be greater than zero.");
+  return;
+}
+
+if (
+  !Number.isInteger(numericQuantity) ||
+  numericQuantity < 0
+) {
+  setError("Stock quantity must be a whole number of zero or more.");
+  return;
+}
     setIsSubmitting(true);
 
     const fields = {
-      product_name: name,
-      sku,
-      category_id: Number(categoryId),
-      unit_price: Number(price),
-      stock_quantity: Number(quantity),
-      status,
-      description,
-    };
+  product_name: trimmedName,
+  sku: trimmedSku,
+  category_id: numericCategoryId,
+  unit_price: numericPrice,
+  stock_quantity: numericQuantity,
+  status,
+  description: description.trim(),
+  remove_image:
+  isEditMode && removeExistingImage
+    ? true
+    : undefined,
+};
+
 
     try {
       if (isEditMode && id) {
@@ -161,7 +244,15 @@ export default function ProductFormPage() {
 
             <div>
               <label className="block text-sm font-medium mb-1">Stock Quantity</label>
-              <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" required />
+              <input
+  type="number"
+  value={quantity}
+  onChange={(e) => setQuantity(e.target.value)}
+  min="0"
+  step="1"
+  className="w-full border rounded-lg px-3 py-2 text-sm"
+  required
+/>
             </div>
 
             <div>
@@ -189,14 +280,26 @@ export default function ProductFormPage() {
               <UploadCloud size={28} className="text-gray-400 mb-2" />
               <span className="text-sm text-gray-500">Drag and drop an image here, or</span>
               <span className="text-sm text-[#f77f00] font-medium mt-1">Choose File</span>
-              <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageSelect(e.target.files?.[0] ?? null)} />
+              <input
+  type="file"
+  accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+  className="hidden"
+  onChange={(e) =>
+    handleImageSelect(e.target.files?.[0] ?? null)
+  }
+/>
             </label>
             {imagePreview && (
               <div className="relative mt-3 w-24 h-24">
                 <img src={imagePreview} alt="Preview" className="w-24 h-24 object-cover rounded-lg border" />
-                <button type="button" onClick={() => { setImagePreview(null); setImageFile(null); }} className="absolute -top-2 -right-2 bg-white rounded-full shadow p-1 text-red-600">
-                  <Trash2 size={14} />
-                </button>
+                <button
+  type="button"
+  onClick={handleRemovePreview}
+  className="absolute -top-2 -right-2 bg-white rounded-full shadow p-1 text-red-600"
+  aria-label="Remove selected image"
+>
+  <Trash2 size={14} />
+</button>
               </div>
             )}
           </div>

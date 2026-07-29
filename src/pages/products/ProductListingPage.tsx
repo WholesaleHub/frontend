@@ -9,20 +9,11 @@ import { getCategories } from "../../services/categoryService";
 import { SkeletonCard } from "../../components/ui/Skeleton";
 import ErrorState from "../../components/ui/ErrorState";
 import ProductImage from "../../components/ui/ProductImage";
+import StockBadge from "../../components/ui/StockBadge";
 
 const PAGE_SIZE = 9;
 
-const STOCK_STYLES: Record<string, string> = {
-  IN_STOCK: "bg-green-100 text-green-700",
-  LOW_STOCK: "bg-yellow-100 text-yellow-700",
-  OUT_OF_STOCK: "bg-red-100 text-red-700",
-};
 
-const STOCK_LABELS: Record<string, string> = {
-  IN_STOCK: "In stock",
-  LOW_STOCK: "Low stock",
-  OUT_OF_STOCK: "Out of stock",
-};
 
 export default function ProductListingPage() {
   const { token } = useAuth();
@@ -42,8 +33,7 @@ export default function ProductListingPage() {
   setIsLoading(true);
   setError("");
   try {
-    const [productsResponse, categoriesData] = await Promise.all([
-  getProducts(token, {
+  const productsResponse = await getProducts(token, {
     page,
     limit: PAGE_SIZE,
     search: searchTerm || undefined,
@@ -55,15 +45,33 @@ export default function ProductListingPage() {
       statusFilter !== "all"
         ? statusFilter
         : undefined,
-  }),
-  getCategories(token),
-]);
-    setProducts(productsResponse.data);
-    setTotalPages(productsResponse.meta.totalPages);
+  });
+
+  setProducts(productsResponse.data);
+  setTotalPages(productsResponse.meta.totalPages);
+
+  try {
+    const categoriesData = await getCategories(token);
     setCategories(categoriesData);
-  } catch (err) {
-    setError(err instanceof Error ? err.message : "Failed to load products.");
-  } finally {
+  } catch (categoryError) {
+    console.error(
+      "Failed to load categories:",
+      categoryError
+    );
+
+    setCategories([]);
+  }
+} catch (err) {
+  setError(
+    err instanceof Error
+      ? err.message
+      : "Failed to load products."
+  );
+
+  setProducts([]);
+  setTotalPages(1);
+} 
+  finally {
     setIsLoading(false);
   }
 }
@@ -136,7 +144,7 @@ export default function ProductListingPage() {
                   <ProductImage
                      imageUrl={product.image_url}
                        alt={product.product_name}
-                       className="w-full h-36 rounded-lg mb-3"
+                       className="w-full h-36 rounded-lg mb-3 pointer-events-none"
                      iconSize={40}
                     />
                   {product.category && (
@@ -148,9 +156,10 @@ export default function ProductListingPage() {
                   <p className="text-[#f77f00] font-semibold mb-2">
                     Ksh {Number(product.unit_price).toLocaleString()}
                   </p>
-                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${STOCK_STYLES[product.stock_status]}`}>
-                    {STOCK_LABELS[product.stock_status]}
-                  </span>
+                  <StockBadge
+  stockStatus={product.stock_status}
+  stockQuantity={product.stock_quantity}
+/>
                 </Link>
               ))
             )}

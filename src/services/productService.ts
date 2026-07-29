@@ -23,7 +23,7 @@ export type Product = {
   status: string;
   created_at: string;
   category?: Category;
-  stock_status: StockStatus;
+  stock_status?: StockStatus;
 };
 
 export type ProductListMeta = { total: number; page: number; limit: number; totalPages: number };
@@ -45,12 +45,39 @@ export type ProductFormFields = {
   stock_quantity: number;
   status?: string;
   description?: string;
+  remove_image?: boolean;
 };
 
-export function resolveImageUrl(image_url: string | null | undefined): string | null {
-  if (!image_url) return null;
-  if (image_url.startsWith("http")) return image_url;
-  return `${BACKEND_ORIGIN}${image_url}`;
+export function resolveImageUrl(
+  imageUrl: string | null | undefined
+): string | null {
+  if (!imageUrl?.trim()) return null;
+
+  const trimmedImageUrl = imageUrl.trim();
+
+  if (
+    trimmedImageUrl.startsWith("http://") ||
+    trimmedImageUrl.startsWith("https://") ||
+    trimmedImageUrl.startsWith("blob:") ||
+    trimmedImageUrl.startsWith("data:")
+  ) {
+    return trimmedImageUrl;
+  }
+
+  if (!BACKEND_ORIGIN) {
+    console.error(
+      "VITE_BACKEND_ORIGIN is not configured. Cannot resolve product image:",
+      trimmedImageUrl
+    );
+    return null;
+  }
+
+  const origin = BACKEND_ORIGIN.replace(/\/+$/, "");
+  const path = trimmedImageUrl.startsWith("/")
+    ? trimmedImageUrl
+    : `/${trimmedImageUrl}`;
+
+  return `${origin}${path}`;
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -101,6 +128,12 @@ function buildFormData(fields: Partial<ProductFormFields>, imageFile?: File | nu
   if (fields.stock_quantity !== undefined) form.append("stock_quantity", String(fields.stock_quantity));
   if (fields.status !== undefined) form.append("status", fields.status);
   if (fields.description !== undefined) form.append("description", fields.description);
+  if (fields.remove_image !== undefined) {
+  form.append(
+    "remove_image",
+    String(fields.remove_image)
+  );
+}
   if (imageFile) form.append("image", imageFile);
   return form;
 }
