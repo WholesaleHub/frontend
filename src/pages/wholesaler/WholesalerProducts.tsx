@@ -10,18 +10,9 @@ import { SkeletonTableRow } from "../../components/ui/Skeleton";
 import ErrorModal from "../../components/ui/ErrorModal";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import ProductImage from "../../components/ui/ProductImage";
+import StockBadge from "../../components/ui/StockBadge";
 
-const STOCK_STYLES: Record<string, string> = {
-  IN_STOCK: "bg-green-100 text-green-700",
-  LOW_STOCK: "bg-yellow-100 text-yellow-700",
-  OUT_OF_STOCK: "bg-red-100 text-red-700",
-};
 
-const STOCK_LABELS: Record<string, string> = {
-  IN_STOCK: "In Stock",
-  LOW_STOCK: "Low Stock",
-  OUT_OF_STOCK: "Out of Stock",
-};
 
 export default function WholesalerProducts() {
   const { token } = useAuth();
@@ -44,8 +35,7 @@ export default function WholesalerProducts() {
     setIsLoading(true);
     setError("");
     try {
-      const [productsResponse, categoriesData] = await Promise.all([
-  getProducts(token, {
+  const productsResponse = await getProducts(token, {
     limit: 100,
     search: searchTerm || undefined,
     category:
@@ -56,14 +46,31 @@ export default function WholesalerProducts() {
       statusFilter !== "all"
         ? statusFilter
         : undefined,
-  }),
-  getCategories(token),
-]);
-      setProducts(productsResponse.data);
-      setCategories(categoriesData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load products.");
-    } finally {
+  });
+
+  setProducts(productsResponse.data);
+
+  try {
+    const categoriesData = await getCategories(token);
+    setCategories(categoriesData);
+  } catch (categoryError) {
+    console.error(
+      "Failed to load categories:",
+      categoryError
+    );
+
+    setCategories([]);
+  }
+} catch (err) {
+  setError(
+    err instanceof Error
+      ? err.message
+      : "Failed to load products."
+  );
+
+  setProducts([]);
+}
+    finally {
       setIsLoading(false);
     }
   }, [ token,
@@ -169,19 +176,31 @@ export default function WholesalerProducts() {
               products.map((product) => (
                 <tr key={product.product_id} className="border-b last:border-b-0">
                   <td className="p-3">
-                    <div className="flex items-center gap-3">
-                      <ProductImage imageUrl={product.image_url} alt={product.product_name} className="w-10 h-10 rounded-lg" iconSize={18} />
-                      <span className="font-medium text-[#003049]">{product.product_name}</span>
-                    </div>
-                  </td>
+  <Link
+    to={`/products/${product.product_id}`}
+    className="inline-flex items-center gap-3 group"
+  >
+    <ProductImage
+      imageUrl={product.image_url}
+      alt={product.product_name}
+      className="w-10 h-10 rounded-lg"
+      iconSize={18}
+    />
+
+    <span className="font-medium text-[#003049] group-hover:text-[#f77f00] group-hover:underline">
+      {product.product_name}
+    </span>
+  </Link>
+</td>
                   <td className="p-3 text-gray-500">{product.sku}</td>
                   <td className="p-3">{product.category?.category_name ?? "—"}</td>
                   <td className="p-3">{Number(product.unit_price).toLocaleString()}</td>
                   <td className="p-3">{product.stock_quantity}</td>
                   <td className="p-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${STOCK_STYLES[product.stock_status]}`}>
-                      {STOCK_LABELS[product.stock_status]}
-                    </span>
+                    <StockBadge
+  stockStatus={product.stock_status}
+  stockQuantity={product.stock_quantity}
+/>
                   </td>
                   <td className="p-3">
                     <div className="flex gap-2 text-gray-500">

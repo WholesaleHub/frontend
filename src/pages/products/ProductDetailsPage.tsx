@@ -10,17 +10,9 @@ import { Skeleton } from "../../components/ui/Skeleton";
 import ErrorState from "../../components/ui/ErrorState";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import ProductImage from "../../components/ui/ProductImage";
+import StockBadge from "../../components/ui/StockBadge";
 
-const STOCK_STYLES: Record<string, string> = {
-  IN_STOCK: "bg-green-100 text-green-700",
-  LOW_STOCK: "bg-yellow-100 text-yellow-700",
-  OUT_OF_STOCK: "bg-red-100 text-red-700",
-};
-const STOCK_LABELS: Record<string, string> = {
-  IN_STOCK: "In Stock",
-  LOW_STOCK: "Low Stock",
-  OUT_OF_STOCK: "Out of Stock",
-};
+
 
 export default function ProductDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -122,9 +114,11 @@ export default function ProductDetailsPage() {
             <div className="flex flex-col">
               <div className="flex items-center justify-between mb-1">
                 <h1 className="text-2xl font-bold text-[#003049]">{product.product_name}</h1>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${STOCK_STYLES[product.stock_status]}`}>
-                  {STOCK_LABELS[product.stock_status]}
-                </span>
+                <StockBadge
+  stockStatus={product.stock_status}
+  stockQuantity={product.stock_quantity}
+  className="px-3"
+/>
               </div>
               {product.description && (
                 <p className="text-sm text-gray-600 mb-4">
