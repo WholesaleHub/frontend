@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, Package } from "lucide-react";
+import { Search, Package, ShoppingCart } from "lucide-react";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { retailerNavItems } from "../../config/retailerNav";
 import { useAuth } from "../../context/AuthContext";
 import { getProducts, type Product, type Category } from "../../services/productService";
 import { getCategories } from "../../services/categoryService";
 import { SkeletonCard } from "../../components/ui/Skeleton";
+import { useCart } from "../../context/CartContext";
 import ErrorState from "../../components/ui/ErrorState";
 import ProductImage from "../../components/ui/ProductImage";
 import StockBadge from "../../components/ui/StockBadge";
@@ -21,7 +22,7 @@ export default function ProductListingPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-
+  const { addToCart } = useCart();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [page, setPage] = useState(1);
@@ -135,33 +136,53 @@ export default function ProductListingPage() {
                 No products match your search.
               </div>
             ) : (
-              products.map((product) => (
-                <Link
-                  key={product.product_id}
-                  to={`/products/${product.product_id}`}
-                  className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow"
-                >
-                  <ProductImage
-                     imageUrl={product.image_url}
-                       alt={product.product_name}
-                       className="w-full h-36 rounded-lg mb-3 pointer-events-none"
-                     iconSize={40}
-                    />
-                  {product.category && (
-                    <span className="inline-block bg-gray-100 text-gray-600 text-xs font-medium px-2 py-0.5 rounded-full mb-2">
-                      {product.category.category_name}
-                    </span>
-                  )}
-                  <h2 className="font-semibold text-[#003049] mb-1">{product.product_name}</h2>
-                  <p className="text-[#f77f00] font-semibold mb-2">
-                    Ksh {Number(product.unit_price).toLocaleString()}
-                  </p>
-                  <StockBadge
-  stockStatus={product.stock_status}
-  stockQuantity={product.stock_quantity}
-/>
-                </Link>
-              ))
+             products.map((product) => {
+  return (
+    <div
+      key={product.product_id}
+      className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow"
+    >
+      <Link to={`/products/${product.product_id}`}>
+        <ProductImage
+          imageUrl={product.image_url}
+          alt={product.product_name}
+          className="w-full h-36 rounded-lg mb-3"
+          iconSize={40}
+        />
+
+        <h2 className="font-semibold text-[#003049]">
+          {product.product_name}
+        </h2>
+
+        <p className="text-[#f77f00] font-semibold mb-2">
+          Ksh {Number(product.unit_price).toLocaleString()}
+        </p>
+
+        <StockBadge
+          stockStatus={product.stock_status}
+          stockQuantity={product.stock_quantity}
+        />
+      </Link>
+
+      <button
+        type="button"
+        onClick={() =>
+          addToCart({
+            product_id: String(product.product_id),
+            product_name: product.product_name,
+            unit_price: Number(product.unit_price),
+            image_url: product.image_url || undefined,
+            stock_quantity: product.stock_quantity,
+          })
+        }
+        className="mt-4 w-full flex items-center justify-center gap-2 rounded-lg bg-[#f77f00] py-2 text-white hover:bg-[#d62828]"
+      >
+        <ShoppingCart size={18} />
+        Add to Cart
+      </button>
+    </div>
+  );
+})
             )}
           </div>
 
@@ -170,15 +191,17 @@ export default function ProductListingPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 rounded-lg text-sm border border-gray-300 bg-white disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
-              <span className="text-sm text-gray-500">Page {page} of {totalPages}</span>
+
+              <span>
+                Page {page} of {totalPages}
+              </span>
+
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-3 py-1.5 rounded-lg text-sm border border-gray-300 bg-white disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Next
               </button>
