@@ -53,12 +53,12 @@ export default function ShoppingCartPage() {
           </p>
 
           <Link
-            to="/products"
-            className="inline-flex items-center gap-2 bg-[#003049] hover:bg-[#00253b] text-white px-6 py-3 rounded-lg"
-          >
-            <ArrowLeft size={18} />
-            Continue Shopping
-          </Link>
+  to="/dashboard/retailer/browse"
+  className="inline-flex items-center gap-2 bg-[#003049] hover:bg-[#00253b] text-white px-6 py-3 rounded-lg"
+>
+  <ArrowLeft size={18} />
+  Continue Shopping
+</Link>
         </div>
       ) : (
         <>
