@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, User, LogOut, Bell, type LucideIcon } from "lucide-react";
+import { useCart } from "../context/CartContext";
+import { Menu, X, User, LogOut, Bell, ShoppingCart, type LucideIcon } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 type NavItem = {
@@ -24,6 +25,7 @@ function DashboardLayout({ children, navItems }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
   const { user, logout } = useAuth();
+  const { cart } = useCart();
 
   return (
     <div className="min-h-screen flex bg-[#f5f7fb] relative">
@@ -84,12 +86,30 @@ function DashboardLayout({ children, navItems }: DashboardLayoutProps) {
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="relative text-gray-600 hover:text-gray-900"
               >
-                <Bell size={22} />
-                {notifications.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#d62828] text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                    {notifications.length}
-                  </span>
-                )}
+                <div className="flex items-center gap-4">
+
+  {/* Notifications */}
+  <div className="relative cursor-pointer">
+    <Bell size={22} />
+    {notifications.length > 0 && (
+      <span className="absolute -top-1 -right-1 bg-[#d62828] text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+        {notifications.length}
+      </span>
+    )}
+  </div>
+
+  {/* Shopping Cart */}
+  <Link to="/cart" className="relative cursor-pointer">
+    <ShoppingCart size={22} />
+
+    {cart.length > 0 && (
+      <span className="absolute -top-1 -right-1 bg-[#f77f00] text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+        {cart.length}
+      </span>
+    )}
+  </Link>
+
+</div>
               </button>
 
               {showNotifications && (
