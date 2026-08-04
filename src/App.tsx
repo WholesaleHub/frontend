@@ -17,6 +17,7 @@ import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ShoppingCartPage from "./pages/cart/ShoppingCartPage";
+import OrderDetailsPage from "./pages/retailer/OrderDetailsPage";
 
 function App() {
   return (
@@ -49,7 +50,14 @@ function App() {
   }
 />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-
+        <Route
+  path="/dashboard/retailer/orders/:id"
+  element={
+    <ProtectedRoute allowedRoles={["RETAILER"]}>
+      <OrderDetailsPage />
+    </ProtectedRoute>
+  }
+/>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
