@@ -44,7 +44,14 @@ function App() {
         <Route path="/cart" element={<ProtectedRoute allowedRoles={["RETAILER"]}><ShoppingCartPage /></ProtectedRoute>} />
         <Route path="/checkout" element={<ProtectedRoute allowedRoles={["RETAILER"]}><CheckoutPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-
+        <Route
+  path="/dashboard/retailer/orders/:id"
+  element={
+    <ProtectedRoute allowedRoles={["RETAILER"]}>
+      <OrderDetailsPage />
+    </ProtectedRoute>
+  }
+/>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>

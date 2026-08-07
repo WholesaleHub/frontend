@@ -2,6 +2,7 @@ import { useState } from "react";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { retailerNavItems } from "../../config/retailerNav";
 import { statusColors } from "../../config/orderStatusColors";
+import { Link } from "react-router-dom";
 
 const allOrders = [
   { id: 1, items: 3, total: "Ksh 4,200", status: "Pending", date: "2026-07-13" },
@@ -44,6 +45,7 @@ function RetailerOrders() {
               <th className="p-3">Total</th>
               <th className="p-3">Date</th>
               <th className="p-3">Status</th>
+              <th className="p-3">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -65,6 +67,14 @@ function RetailerOrders() {
                       {order.status}
                     </span>
                   </td>
+                  <td className="p-3">
+  <Link
+    to={`/dashboard/retailer/orders/${order.id}`}
+    className="inline-flex items-center rounded-lg bg-[#003049] px-3 py-2 text-sm font-medium text-white transition hover:bg-[#00253b]"
+  >
+    View Details
+  </Link>
+</td>
                 </tr>
               ))
             )}
