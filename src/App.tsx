@@ -13,11 +13,11 @@ import RetailerDashboard from "./pages/dashboards/RetailerDashboard";
 import RetailerOrders from "./pages/retailer/RetailerOrders";
 import ProductListingPage from "./pages/products/ProductListingPage";
 import ProductDetailsPage from "./pages/products/ProductDetailsPage";
+import ShoppingCartPage from "./pages/cart/ShoppingCartPage";
+import CheckoutPage from "./pages/checkout/CheckoutPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import ShoppingCartPage from "./pages/cart/ShoppingCartPage";
-import OrderDetailsPage from "./pages/retailer/OrderDetailsPage";
 
 function App() {
   return (
@@ -41,14 +41,8 @@ function App() {
         <Route path="/dashboard/retailer/orders" element={<ProtectedRoute allowedRoles={["RETAILER"]}><RetailerOrders /></ProtectedRoute>} />
 
         <Route path="/products/:id" element={<ProtectedRoute><ProductDetailsPage /></ProtectedRoute>} />
-        <Route
-  path="/cart"
-  element={
-    <ProtectedRoute allowedRoles={["WHOLESALER", "RETAILER"]}>
-      <ShoppingCartPage />
-    </ProtectedRoute>
-  }
-/>
+        <Route path="/cart" element={<ProtectedRoute allowedRoles={["RETAILER"]}><ShoppingCartPage /></ProtectedRoute>} />
+        <Route path="/checkout" element={<ProtectedRoute allowedRoles={["RETAILER"]}><CheckoutPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route
   path="/dashboard/retailer/orders/:id"
