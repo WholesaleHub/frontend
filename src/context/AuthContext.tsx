@@ -1,11 +1,30 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
-type User = {
+export type UserRole = "RETAILER" | "WHOLESALER" | "ADMIN";
+
+export type User = {
   id: string;
   fullName: string;
   email: string;
-  role: string;
+  role: UserRole;
   businessName?: string;
+};
+
+type StoredAuth = {
+  user: User;
+  token: string;
+};
+
+type JwtPayload = {
+  exp?: number;
 };
 
 type AuthContextType = {
@@ -17,45 +36,189 @@ type AuthContextType = {
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
 const STORAGE_KEY = "wholesalehub_auth";
 
-function loadStoredAuth(): { user: User | null; token: string | null } {
+const VALID_ROLES: UserRole[] = ["RETAILER", "WHOLESALER", "ADMIN"];
+
+function decodeJwtPayload(token: string): JwtPayload | null {
+  try {
+    const parts = token.split(".");
+
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    const base64Url = parts[1];
+    const base64 = base64Url
+      .replace(/-/g, "+")
+      .replace(/_/g, "/")
+      .padEnd(Math.ceil(base64Url.length / 4) * 4, "=");
+
+    return JSON.parse(window.atob(base64)) as JwtPayload;
+  } catch {
+    return null;
+  }
+}
+
+function isTokenUsable(token: string) {
+  const payload = decodeJwtPayload(token);
+
+  if (!payload?.exp) {
+    return false;
+  }
+
+  return payload.exp * 1_000 > Date.now();
+}
+
+function isValidUser(value: unknown): value is User {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const candidate = value as Partial<User>;
+
+  return (
+    typeof candidate.id === "string" &&
+    typeof candidate.fullName === "string" &&
+    typeof candidate.email === "string" &&
+    typeof candidate.role === "string" &&
+    VALID_ROLES.includes(candidate.role.toUpperCase() as UserRole)
+  );
+}
+
+function clearStoredAuth() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+function loadStoredAuth(): StoredAuth | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { user: null, token: null };
-    const parsed = JSON.parse(raw);
-    return { user: parsed.user ?? null, token: parsed.token ?? null };
+
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<StoredAuth>;
+
+    if (
+      typeof parsed.token !== "string" ||
+      !isValidUser(parsed.user) ||
+      !isTokenUsable(parsed.token)
+    ) {
+      clearStoredAuth();
+      return null;
+    }
+
+    return {
+      token: parsed.token,
+      user: {
+        ...parsed.user,
+        role: parsed.user.role.toUpperCase() as UserRole,
+      },
+    };
   } catch {
-    return { user: null, token: null };
+    clearStoredAuth();
+    return null;
   }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [stored] = useState(loadStoredAuth);
-  const [user, setUser] = useState<User | null>(stored.user);
-  const [token, setToken] = useState<string | null>(stored.token);
+  const [initialAuth] = useState(loadStoredAuth);
 
-  const login = (userData: User, authToken: string) => {
-    setUser(userData);
-    setToken(authToken);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ user: userData, token: authToken }));
-  };
+  const [user, setUser] = useState<User | null>(initialAuth?.user ?? null);
 
-  const logout = () => {
+  const [token, setToken] = useState<string | null>(initialAuth?.token ?? null);
+
+  const logout = useCallback(() => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem(STORAGE_KEY);
-  };
+    clearStoredAuth();
+  }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token }}>
-      {children}
-    </AuthContext.Provider>
+  const login = useCallback((userData: User, authToken: string) => {
+    const normalizedUser: User = {
+      ...userData,
+      role: userData.role.toUpperCase() as UserRole,
+    };
+
+    setUser(normalizedUser);
+    setToken(authToken);
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        user: normalizedUser,
+        token: authToken,
+      }),
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
+
+    const payload = decodeJwtPayload(token);
+
+    if (!payload?.exp) {
+      logout();
+      return;
+    }
+
+    const remainingTime = payload.exp * 1_000 - Date.now();
+
+    if (remainingTime <= 0) {
+      logout();
+      return;
+    }
+
+    const timeoutId = window.setTimeout(logout, remainingTime);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [token, logout]);
+
+  useEffect(() => {
+    function synchronizeAuth(event: StorageEvent) {
+      if (event.key !== STORAGE_KEY) {
+        return;
+      }
+
+      const storedAuth = loadStoredAuth();
+
+      setUser(storedAuth?.user ?? null);
+      setToken(storedAuth?.token ?? null);
+    }
+
+    window.addEventListener("storage", synchronizeAuth);
+
+    return () => {
+      window.removeEventListener("storage", synchronizeAuth);
+    };
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      user,
+      token,
+      login,
+      logout,
+      isAuthenticated: Boolean(token && user),
+    }),
+    [user, token, login, logout],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-  if (context === undefined) throw new Error("useAuth must be used within an AuthProvider");
+
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+
   return context;
 }
