@@ -3,33 +3,12 @@ import { Eye, RefreshCw, ShoppingBag } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { retailerNavItems } from "../../config/retailerNav";
-import { statusColors } from "../../config/orderStatusColors";
 import { useAuth } from "../../context/AuthContext";
 import { getMyOrders, type Order } from "../../services/orderService";
-
-const placeholderRecentOrders = [
-  {
-    id: 1,
-    items: 3,
-    total: "Ksh 4,200",
-    status: "Pending",
-    date: "2026-07-13",
-  },
-  {
-    id: 2,
-    items: 1,
-    total: "Ksh 1,200",
-    status: "Dispatched",
-    date: "2026-07-12",
-  },
-  {
-    id: 3,
-    items: 5,
-    total: "Ksh 8,900",
-    status: "Completed",
-    date: "2026-07-10",
-  },
-];
+import {
+  ORDER_STATUS_LABELS,
+  statusColors,
+} from "../../config/orderStatusColors";
 
 export default function RetailerDashboard() {
   const { token } = useAuth();
@@ -49,7 +28,6 @@ export default function RetailerDashboard() {
 
     try {
       const result = await getMyOrders(token);
-
       setOrders(result);
     } catch (err) {
       setError(
@@ -61,7 +39,7 @@ export default function RetailerDashboard() {
   }, [token]);
 
   useEffect(() => {
-    void loadDashboard();
+    loadDashboard();
   }, [loadDashboard]);
 
   const pendingOrders = orders.filter(
@@ -75,6 +53,14 @@ export default function RetailerDashboard() {
   const totalSpent = orders
     .filter((order) => order.status.toUpperCase() !== "CANCELLED")
     .reduce((total, order) => total + Number(order.total_amount), 0);
+
+  const recentOrders = [...orders]
+    .sort(
+      (first, second) =>
+        new Date(second.order_date).getTime() -
+        new Date(first.order_date).getTime(),
+    )
+    .slice(0, 5);
 
   const stats = [
     {
@@ -147,7 +133,7 @@ export default function RetailerDashboard() {
         ))}
       </div>
 
-      <div className="rounded-lg bg-white p-4 shadow">
+      <div className="overflow-hidden rounded-lg bg-white p-4 shadow">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-semibold text-[#003049]">Recent Orders</h2>
 
@@ -160,37 +146,75 @@ export default function RetailerDashboard() {
           </Link>
         </div>
 
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b text-left text-gray-500">
-              <th className="pb-2">Order ID</th>
-              <th className="pb-2">Items</th>
-              <th className="pb-2">Total</th>
-              <th className="pb-2">Date</th>
-              <th className="pb-2">Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {placeholderRecentOrders.map((order) => (
-              <tr key={order.id} className="border-b last:border-b-0">
-                <td className="py-2">#{order.id}</td>
-                <td className="py-2">{order.items}</td>
-                <td className="py-2">{order.total}</td>
-                <td className="py-2 text-gray-500">{order.date}</td>
-                <td className="py-2">
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs font-medium ${
-                      statusColors[order.status]
-                    }`}
-                  >
-                    {order.status}
-                  </span>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[650px] text-sm">
+            <thead>
+              <tr className="border-b text-left text-gray-500">
+                <th className="pb-2">Order ID</th>
+                <th className="pb-2">Items</th>
+                <th className="pb-2">Total</th>
+                <th className="pb-2">Date</th>
+                <th className="pb-2">Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={5} className="py-6 text-center text-gray-400">
+                    Loading recent orders...
+                  </td>
+                </tr>
+              ) : recentOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-6 text-center text-gray-400">
+                    You have not placed any orders yet.
+                  </td>
+                </tr>
+              ) : (
+                recentOrders.map((order) => {
+                  const status = order.status.toUpperCase();
+
+                  return (
+                    <tr
+                      key={order.order_id}
+                      className="border-b last:border-b-0"
+                    >
+                      <td className="py-3">
+                        <Link
+                          to={`/dashboard/retailer/orders/${order.order_id}`}
+                          className="font-medium text-[#003049] hover:underline"
+                        >
+                          #{order.order_id}
+                        </Link>
+                      </td>
+
+                      <td className="py-3">{order.orderItems.length}</td>
+
+                      <td className="py-3">
+                        Ksh {Number(order.total_amount).toLocaleString()}
+                      </td>
+
+                      <td className="py-3 text-gray-500">
+                        {new Date(order.order_date).toLocaleDateString()}
+                      </td>
+
+                      <td className="py-3">
+                        <span
+                          className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                            statusColors[status] ?? "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {ORDER_STATUS_LABELS[status] ?? order.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </DashboardLayout>
   );
