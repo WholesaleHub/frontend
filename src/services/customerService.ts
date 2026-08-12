@@ -48,6 +48,50 @@ export type CustomerProfilePayload = {
   delivery_notes?: string;
 };
 
+export type CustomerListItem = CustomerProfile & {
+  user: {
+    full_name: string;
+    email: string;
+    status: string;
+  };
+  orderCount: number;
+  totalSpent: number;
+};
+
+export type CustomerOrder = {
+  order_id: number;
+  customer_id: number;
+  order_date: string;
+  status: string;
+  total_amount: string;
+  orderItems: Array<{
+    order_item_id: number;
+    quantity: number;
+    unit_price: string;
+    subtotal: string;
+    product: {
+      product_id: number;
+      product_name: string;
+      sku: string;
+    };
+  }>;
+};
+
+export type CustomerDetails = CustomerProfile & {
+  user: {
+    full_name: string;
+    email: string;
+    status: string;
+    created_at: string;
+  };
+  summary: {
+    totalOrders: number;
+    activeOrders: number;
+    totalSpent: number;
+  };
+  orders: CustomerOrder[];
+};
+
 export async function getMyCustomerProfile(
   token: string,
 ): Promise<CustomerProfile | null> {
@@ -98,7 +142,44 @@ export async function saveMyCustomerProfile(
   return response.json();
 }
 
+export async function getCustomers(token: string): Promise<CustomerListItem[]> {
+  const response = await fetch(`${API_BASE_URL}/customers`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
+  if (!response.ok) {
+    throw new Error(
+      await extractErrorMessage(response, "Failed to load customers."),
+    );
+  }
+
+  return response.json();
+}
+
+export async function getCustomerById(
+  token: string,
+  id: number,
+): Promise<CustomerDetails> {
+  const response = await fetch(`${API_BASE_URL}/customers/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 404) {
+    throw new Error("Customer not found.");
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      await extractErrorMessage(response, "Failed to load customer details."),
+    );
+  }
+
+  return response.json();
+}
 
 export async function uploadCustomerProfileImage(
   token: string,

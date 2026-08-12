@@ -18,6 +18,8 @@ import CheckoutPage from "./pages/checkout/CheckoutPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import CustomerDetailsPage from "./pages/wholesaler/CustomerDetailsPage";
+
 
 function App() {
   return (
@@ -44,15 +46,9 @@ function App() {
         <Route path="/cart" element={<ProtectedRoute allowedRoles={["RETAILER"]}><ShoppingCartPage /></ProtectedRoute>} />
         <Route path="/checkout" element={<ProtectedRoute allowedRoles={["RETAILER"]}><CheckoutPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-        <Route
-  path="/dashboard/retailer/orders/:id"
-  element={
-    <ProtectedRoute allowedRoles={["RETAILER"]}>
-      <OrderDetailsPage />
-    </ProtectedRoute>
-  }
-/>
+        <Route path="/dashboard/retailer/orders/:id" element={<ProtectedRoute allowedRoles={["RETAILER"]}><OrderDetailsPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFoundPage />} />
+        <Route path="/dashboard/wholesaler/customers/:id" element={<ProtectedRoute allowedRoles={["WHOLESALER"]}><CustomerDetailsPage /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
