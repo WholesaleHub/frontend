@@ -11,6 +11,7 @@ import WholesalerOrders from "./pages/wholesaler/WholesalerOrders";
 import WholesalerReports from "./pages/wholesaler/WholesalerReports";
 import RetailerDashboard from "./pages/dashboards/RetailerDashboard";
 import RetailerOrders from "./pages/retailer/RetailerOrders";
+import OrderDetailsPage from "./pages/retailer/OrderDetailsPage";
 import ProductListingPage from "./pages/products/ProductListingPage";
 import ProductDetailsPage from "./pages/products/ProductDetailsPage";
 import ShoppingCartPage from "./pages/cart/ShoppingCartPage";
