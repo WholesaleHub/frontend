@@ -19,6 +19,7 @@ import {
 } from "../../services/dashboardService";
 import ErrorState from "../../components/ui/ErrorState";
 import { Skeleton } from "../../components/ui/Skeleton";
+import RecentOrdersTable from "../../components/orders/RecentOrdersTable";
 
 type StatCardProps = {
   label: string;
@@ -185,21 +186,7 @@ export default function RetailerDashboard() {
             />
           </div>
 
-          <div className="mt-6 rounded-lg bg-white p-6 shadow">
-            <h2 className="font-semibold text-[#003049]">Order activity</h2>
-
-            <p className="mt-2 text-sm text-gray-500">
-              View your complete order history and inspect individual orders
-              from the My Orders page.
-            </p>
-
-            <Link
-              to="/dashboard/retailer/orders"
-              className="mt-4 inline-flex text-sm font-medium text-[#f77f00] hover:underline"
-            >
-              View all orders
-            </Link>
-          </div>
+          <RecentOrdersTable orders={dashboard.recentOrders} />
         </>
       )}
     </DashboardLayout>
