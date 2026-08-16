@@ -77,3 +77,76 @@ export async function updateMyCustomerProfile(
     "Failed to update your business profile.",
   );
 }
+export type CustomerPagination = {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
+
+export type CustomersResponse = {
+  data: CustomerProfile[];
+  pagination: CustomerPagination;
+};
+
+export type CustomerQuery = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: CustomerStatus | "";
+};
+
+export async function getCustomers(
+  token: string,
+  query: CustomerQuery = {},
+): Promise<CustomersResponse> {
+  const parameters = new URLSearchParams();
+
+  parameters.set("page", String(query.page ?? 1));
+  parameters.set("limit", String(query.limit ?? 10));
+
+  if (query.search?.trim()) {
+    parameters.set("search", query.search.trim());
+  }
+
+  if (query.status) {
+    parameters.set("status", query.status);
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/customers?${parameters.toString()}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  return handleResponse<CustomersResponse>(
+    response,
+    "Failed to load customers.",
+  );
+}
+
+export async function changeCustomerStatus(
+  token: string,
+  customerId: number,
+  status: CustomerStatus,
+): Promise<CustomerProfile> {
+  const response = await fetch(
+    `${API_BASE_URL}/customers/${customerId}/status`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status }),
+    },
+  );
+
+  return handleResponse<CustomerProfile>(
+    response,
+    "Failed to update customer status.",
+  );
+}
