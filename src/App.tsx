@@ -5,10 +5,6 @@ import WholesalerDashboard from "./pages/dashboards/WholesalerDashboard";
 import WholesalerProducts from "./pages/wholesaler/WholesalerProducts";
 import ProductFormPage from "./pages/wholesaler/ProductFormPage";
 import CategoriesPage from "./pages/wholesaler/CategoriesPage";
-import CustomersPage from "./pages/wholesaler/CustomersPage";
-import SettingsPage from "./pages/wholesaler/SettingsPage";
-import WholesalerOrders from "./pages/wholesaler/WholesalerOrders";
-import WholesalerReports from "./pages/wholesaler/WholesalerReports";
 import RetailerDashboard from "./pages/dashboards/RetailerDashboard";
 import RetailerOrders from "./pages/retailer/RetailerOrders";
 import OrderDetailsPage from "./pages/retailer/OrderDetailsPage";
@@ -20,6 +16,7 @@ import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminCustomersPage from "./pages/admin/AdminCustomersPage";
+import WholesalerOrders from "./pages/wholesaler/WholesalerOrders";
 
 function App() {
   return (
@@ -69,22 +66,6 @@ function App() {
           }
         />
         <Route
-          path="/dashboard/wholesaler/customers"
-          element={
-            <ProtectedRoute allowedRoles={["WHOLESALER"]}>
-              <CustomersPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/wholesaler/settings"
-          element={
-            <ProtectedRoute allowedRoles={["WHOLESALER"]}>
-              <SettingsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/dashboard/wholesaler/orders"
           element={
             <ProtectedRoute allowedRoles={["WHOLESALER"]}>
@@ -92,15 +73,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
-          path="/dashboard/wholesaler/reports"
+          path="/dashboard/wholesaler/orders/:id"
           element={
             <ProtectedRoute allowedRoles={["WHOLESALER"]}>
-              <WholesalerReports />
+              <OrderDetailsPage />
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/dashboard/retailer"
           element={
