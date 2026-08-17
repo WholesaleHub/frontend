@@ -19,6 +19,7 @@ import CheckoutPage from "./pages/checkout/CheckoutPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminCustomersPage from "./pages/admin/AdminCustomersPage";
 
 function App() {
   return (
@@ -27,32 +28,160 @@ function App() {
         <Route path="/" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
 
-        <Route path="/dashboard/wholesaler" element={<ProtectedRoute allowedRoles={["WHOLESALER"]}><WholesalerDashboard /></ProtectedRoute>} />
-        <Route path="/dashboard/wholesaler/products" element={<ProtectedRoute allowedRoles={["WHOLESALER"]}><WholesalerProducts /></ProtectedRoute>} />
-        <Route path="/dashboard/wholesaler/products/new" element={<ProtectedRoute allowedRoles={["WHOLESALER"]}><ProductFormPage /></ProtectedRoute>} />
-        <Route path="/dashboard/wholesaler/products/:id/edit" element={<ProtectedRoute allowedRoles={["WHOLESALER"]}><ProductFormPage /></ProtectedRoute>} />
-        <Route path="/dashboard/wholesaler/categories" element={<ProtectedRoute allowedRoles={["WHOLESALER"]}><CategoriesPage /></ProtectedRoute>} />
-        <Route path="/dashboard/wholesaler/customers" element={<ProtectedRoute allowedRoles={["WHOLESALER"]}><CustomersPage /></ProtectedRoute>} />
-        <Route path="/dashboard/wholesaler/settings" element={<ProtectedRoute allowedRoles={["WHOLESALER"]}><SettingsPage /></ProtectedRoute>} />
-        <Route path="/dashboard/wholesaler/orders" element={<ProtectedRoute allowedRoles={["WHOLESALER"]}><WholesalerOrders /></ProtectedRoute>} />
-        <Route path="/dashboard/wholesaler/reports" element={<ProtectedRoute allowedRoles={["WHOLESALER"]}><WholesalerReports /></ProtectedRoute>} />
-
-        <Route path="/dashboard/retailer" element={<ProtectedRoute allowedRoles={["RETAILER"]}><RetailerDashboard /></ProtectedRoute>} />
-        <Route path="/dashboard/retailer/browse" element={<ProtectedRoute allowedRoles={["RETAILER"]}><ProductListingPage /></ProtectedRoute>} />
-        <Route path="/dashboard/retailer/orders" element={<ProtectedRoute allowedRoles={["RETAILER"]}><RetailerOrders /></ProtectedRoute>} />
-
-        <Route path="/products/:id" element={<ProtectedRoute><ProductDetailsPage /></ProtectedRoute>} />
-        <Route path="/cart" element={<ProtectedRoute allowedRoles={["RETAILER"]}><ShoppingCartPage /></ProtectedRoute>} />
-        <Route path="/checkout" element={<ProtectedRoute allowedRoles={["RETAILER"]}><CheckoutPage /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route
-  path="/dashboard/retailer/orders/:id"
-  element={
-    <ProtectedRoute allowedRoles={["RETAILER"]}>
-      <OrderDetailsPage />
-    </ProtectedRoute>
-  }
-/>
+          path="/dashboard/wholesaler"
+          element={
+            <ProtectedRoute allowedRoles={["WHOLESALER"]}>
+              <WholesalerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/wholesaler/products"
+          element={
+            <ProtectedRoute allowedRoles={["WHOLESALER"]}>
+              <WholesalerProducts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/wholesaler/products/new"
+          element={
+            <ProtectedRoute allowedRoles={["WHOLESALER"]}>
+              <ProductFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/wholesaler/products/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={["WHOLESALER"]}>
+              <ProductFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/wholesaler/categories"
+          element={
+            <ProtectedRoute allowedRoles={["WHOLESALER"]}>
+              <CategoriesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/wholesaler/customers"
+          element={
+            <ProtectedRoute allowedRoles={["WHOLESALER"]}>
+              <CustomersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/wholesaler/settings"
+          element={
+            <ProtectedRoute allowedRoles={["WHOLESALER"]}>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/wholesaler/orders"
+          element={
+            <ProtectedRoute allowedRoles={["WHOLESALER"]}>
+              <WholesalerOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/wholesaler/reports"
+          element={
+            <ProtectedRoute allowedRoles={["WHOLESALER"]}>
+              <WholesalerReports />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/retailer"
+          element={
+            <ProtectedRoute allowedRoles={["RETAILER"]}>
+              <RetailerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/retailer/browse"
+          element={
+            <ProtectedRoute allowedRoles={["RETAILER"]}>
+              <ProductListingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/retailer/orders"
+          element={
+            <ProtectedRoute allowedRoles={["RETAILER"]}>
+              <RetailerOrders />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/products/:id"
+          element={
+            <ProtectedRoute>
+              <ProductDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute allowedRoles={["RETAILER"]}>
+              <ShoppingCartPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute allowedRoles={["RETAILER"]}>
+              <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/retailer/orders/:id"
+          element={
+            <ProtectedRoute allowedRoles={["RETAILER"]}>
+              <OrderDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminCustomersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/customers"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminCustomersPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
