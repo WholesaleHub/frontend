@@ -144,8 +144,6 @@ export default function RetailerDashboard() {
               {isLoading ? "—" : stat.value}
             </p>
           </div>
-        ))}
-      </div>
 
       <div className="rounded-lg bg-white p-4 shadow">
         <div className="mb-4 flex items-center justify-between">
@@ -155,8 +153,8 @@ export default function RetailerDashboard() {
             to="/dashboard/retailer/orders"
             className="flex items-center gap-1 text-sm font-medium text-[#f77f00] hover:underline"
           >
-            <Eye size={14} />
-            View All
+            <ShoppingBag size={16} />
+            Browse Products
           </Link>
         </div>
 
@@ -192,6 +190,68 @@ export default function RetailerDashboard() {
           </tbody>
         </table>
       </div>
+
+      {error && !isLoading && (
+        <ErrorState message={error} onRetry={() => void loadDashboard()} />
+      )}
+
+      {!error && isLoading && <DashboardSkeleton />}
+
+      {!error && !isLoading && dashboard && (
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              label="Total Orders"
+              value={dashboard.totalOrders}
+              icon={<ShoppingBag size={20} className="text-[#003049]" />}
+            />
+
+            <StatCard
+              label="Pending"
+              value={dashboard.pendingOrders}
+              icon={<Clock3 size={20} className="text-amber-500" />}
+              valueClassName="text-amber-600"
+            />
+
+            <StatCard
+              label="Confirmed"
+              value={dashboard.confirmedOrders}
+              icon={<CheckCircle2 size={20} className="text-blue-500" />}
+              valueClassName="text-blue-600"
+            />
+
+            <StatCard
+              label="Packed"
+              value={dashboard.packedOrders}
+              icon={<PackageOpen size={20} className="text-indigo-500" />}
+              valueClassName="text-indigo-600"
+            />
+
+            <StatCard
+              label="Shipped"
+              value={dashboard.shippedOrders}
+              icon={<Truck size={20} className="text-purple-500" />}
+              valueClassName="text-purple-600"
+            />
+
+            <StatCard
+              label="Delivered"
+              value={dashboard.deliveredOrders}
+              icon={<PackageCheck size={20} className="text-green-500" />}
+              valueClassName="text-green-600"
+            />
+
+            <StatCard
+              label="Cancelled"
+              value={dashboard.cancelledOrders}
+              icon={<XCircle size={20} className="text-red-500" />}
+              valueClassName="text-red-600"
+            />
+          </div>
+
+          <RecentOrdersTable orders={dashboard.recentOrders} />
+        </>
+      )}
     </DashboardLayout>
   );
 }
