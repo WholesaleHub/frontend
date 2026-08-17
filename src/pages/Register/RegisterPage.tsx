@@ -11,6 +11,7 @@ type FormData = {
   password: string;
   confirmPassword: string;
   agreedToTerms: boolean;
+  role: "WHOLESALER" | "RETAILER";
 };
 
 type FormErrors = {
@@ -20,6 +21,7 @@ type FormErrors = {
   password: string;
   confirmPassword: string;
   agreedToTerms: string;
+  role: string;
 };
 
 const PASSWORD_RULES = [
@@ -38,6 +40,7 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
     agreedToTerms: false,
+    role: "RETAILER",
   });
 
   const [errors, setErrors] = useState<FormErrors>({
@@ -47,6 +50,7 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
     agreedToTerms: "",
+    role: "RETAILER",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -76,6 +80,7 @@ export default function RegisterPage() {
       password: "",
       confirmPassword: "",
       agreedToTerms: "",
+      role: "",
     };
 
     if (!formData.fullName.trim()) {
@@ -108,6 +113,10 @@ export default function RegisterPage() {
       newErrors.agreedToTerms = "You must agree to the Terms and Conditions";
     }
 
+    if (!formData.role) {
+      newErrors.role = "Please select an account type.";
+    }
+
     setErrors(newErrors);
     return Object.values(newErrors).every((error) => error === "");
   };
@@ -126,6 +135,7 @@ export default function RegisterPage() {
         email: formData.email,
         password: formData.password,
         phone: formData.phone.trim() || undefined,
+        role: formData.role,
       });
 
       setSuccessMessage("Account created successfully! Redirecting to login...");
@@ -136,6 +146,7 @@ export default function RegisterPage() {
         password: "",
         confirmPassword: "",
         agreedToTerms: false,
+        role: "RETAILER",
       });
 
       setTimeout(() => navigate("/login"), 1500);
@@ -166,6 +177,35 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+          
+          <div className="mb-2">
+  <label className="block text-sm font-medium mb-2">I am registering as a:</label>
+  <div className="flex gap-4">
+    <label className="flex items-center gap-2 text-sm">
+      <input
+        type="radio"
+        name="role"
+        value="WHOLESALER"
+        checked={formData.role === "WHOLESALER"}
+        onChange={handleChange}
+        className="accent-[#f77f00]"
+      />
+      Wholesaler
+    </label>
+    <label className="flex items-center gap-2 text-sm">
+      <input
+        type="radio"
+        name="role"
+        value="RETAILER"
+        checked={formData.role === "RETAILER"}
+        onChange={handleChange}
+        className="accent-[#f77f00]"
+      />
+      Retailer
+    </label>
+  </div>
+</div>
+          
           <div>
             <label className="block text-sm font-medium mb-1">Full Name</label>
             <input
