@@ -22,6 +22,8 @@ export type CustomerProfile = {
   };
 };
 
+export type CustomerDetails = CustomerProfile;
+
 export type CustomerProfilePayload = {
   business_name: string;
   business_location: string;
@@ -149,4 +151,28 @@ export async function changeCustomerStatus(
     response,
     "Failed to update customer status.",
   );
+}
+export async function getCustomerById(
+  token: string,
+  customerId: number,
+): Promise<CustomerDetails> {
+  const response = await fetch(
+    `${API_BASE_URL}/customers/${customerId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  return handleResponse<CustomerDetails>(
+    response,
+    "Failed to load customer.",
+  );
+}
+
+export function resolveCustomerImageUrl(
+  customer: CustomerDetails,
+): string | undefined {
+  return undefined;
 }
