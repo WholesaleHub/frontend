@@ -17,6 +17,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminCustomersPage from "./pages/admin/AdminCustomersPage";
 import WholesalerOrders from "./pages/wholesaler/WholesalerOrders";
+import CustomerDetailsPage from "./pages/wholesaler/CustomerDetailsPage";
 
 function App() {
   return (

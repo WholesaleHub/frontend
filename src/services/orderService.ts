@@ -101,17 +101,6 @@ export async function getOrders(
 
   return handleResponse<Order[]>(response);
 }
-
-export async function getMyOrders(token: string): Promise<Order[]> {
-  const response = await fetch(`${API_BASE_URL}/orders/my-orders`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  return handleResponse<Order[]>(response);
-}
-
 /**
  * Retrieves only the authenticated retailer's orders.
  * The backend scopes the result using the JWT.
