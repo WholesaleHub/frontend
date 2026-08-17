@@ -1,229 +1,179 @@
-import { AlertTriangle, Plus, RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { AlertTriangle, Plus, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
+import {
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from "recharts";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { wholesalerNavItems } from "../../config/wholesalerNav";
-import { useAuth } from "../../context/AuthContext";
-import {
-  getDashboardStats,
-  type DashboardStats,
-} from "../../services/dashboardService";
-import { getProducts, type Product } from "../../services/productService";
-import { Skeleton } from "../../components/ui/Skeleton";
-import ErrorState from "../../components/ui/ErrorState";
+import { statusColors } from "../../config/orderStatusColors";
 
-const REFRESH_INTERVAL_MS = 60_000;
+const stats = [
+  { label: "Total Products", value: 48 },
+  { label: "Orders Today", value: 12 },
+  { label: "Low Stock Items", value: 5 },
+  { label: "Total Revenue (Ksh)", value: "234,500" },
+];
 
-export default function WholesalerDashboard() {
-  const { token } = useAuth();
+const revenueData = [
+  { day: "Mon", revenue: 32000 },
+  { day: "Tue", revenue: 41000 },
+  { day: "Wed", revenue: 28000 },
+  { day: "Thu", revenue: 55000 },
+  { day: "Fri", revenue: 47000 },
+  { day: "Sat", revenue: 62000 },
+  { day: "Sun", revenue: 39000 },
+];
 
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [lowStockItems, setLowStockItems] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+const demandData = [
+  { product: "Milk", unitsSold: 320 },
+  { product: "Rice 50kg", unitsSold: 85 },
+  { product: "Cooking Oil", unitsSold: 140 },
+  { product: "Sugar", unitsSold: 210 },
+  { product: "Flour", unitsSold: 95 },
+];
 
-  const loadDashboard = useCallback(async () => {
-    if (!token) {
-      setError("Your session is unavailable. Please log in again.");
-      setIsLoading(false);
-      return;
-    }
+const stockData = [
+  { name: "In Stock", value: 38 },
+  { name: "Low Stock", value: 5 },
+  { name: "Out of Stock", value: 5 },
+];
 
-    setIsLoading(true);
-    setError("");
+const STOCK_COLORS = ["#f77f00", "#fcbf49", "#d62828"];
 
-    try {
-      const [statsData, productsResponse] = await Promise.all([
-        getDashboardStats(token),
-        getProducts(token, { limit: 100 }),
-      ]);
+const lowStockItems = [
+  { name: "Rice 50kg", quantity: 3 },
+  { name: "Cooking Oil 5L", quantity: 5 },
+  { name: "Flour 2kg", quantity: 2 },
+];
 
-      setStats(statsData);
+const recentOrders = [
+  { id: 1, customer: "Mary Wanjiru", items: 3, total: "Ksh 4,200", status: "Pending" },
+  { id: 2, customer: "John Otieno", items: 1, total: "Ksh 1,200", status: "Approved" },
+  { id: 3, customer: "Grace Achieng", items: 5, total: "Ksh 8,900", status: "Dispatched" },
+  { id: 4, customer: "Peter Kamau", items: 2, total: "Ksh 2,600", status: "Completed" },
+];
 
-      setLowStockItems(
-        productsResponse.data
-          .filter(
-            (product) =>
-              product.stock_status === "LOW_STOCK" ||
-              product.stock_status === "OUT_OF_STOCK",
-          )
-          .slice(0, 6),
-      );
-
-      setLastUpdated(new Date());
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load the dashboard.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [token]);
-
-  useEffect(() => {
-    void loadDashboard();
-
-    const interval = window.setInterval(() => {
-      void loadDashboard();
-    }, REFRESH_INTERVAL_MS);
-
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, [loadDashboard]);
-
+function WholesalerDashboard() {
   return (
     <DashboardLayout navItems={wholesalerNavItems}>
-      <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[#003049]">Overview</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-[#003049]">Overview</h1>
+        <div className="flex gap-2">
+          <Link
+            to="/dashboard/wholesaler/products"
+            className="flex items-center gap-2 bg-[#f77f00] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#d62828] transition-colors"
+          >
+            <Plus size={16} />
+            Add Product
+          </Link>
+          <Link
+            to="/dashboard/wholesaler/orders"
+            className="flex items-center gap-2 bg-white border border-gray-300 text-[#003049] px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+          >
+            <Eye size={16} />
+            View All Orders
+          </Link>
+        </div>
+      </div>
 
-          <p className="mt-1 text-sm text-gray-500">
-            Monitor products, categories and stock levels.
-          </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {stats.map((stat) => (
+          <div key={stat.label} className="bg-white rounded-lg shadow p-4">
+            <p className="text-sm text-gray-500">{stat.label}</p>
+            <p className="text-2xl font-bold text-[#003049] mt-1">{stat.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <h2 className="font-semibold mb-4 text-[#003049]">Revenue Trend (This Week)</h2>
+        <ResponsiveContainer width="100%" height={250}>
+          <LineChart data={revenueData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="day" tick={{ fontSize: 12 }} />
+            <YAxis />
+            <Tooltip />
+            <Line type="monotone" dataKey="revenue" stroke="#f77f00" strokeWidth={3} dot={{ r: 4 }} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="bg-white rounded-lg shadow p-4">
+          <h2 className="font-semibold mb-4 text-[#003049]">Product Demand (Units Sold)</h2>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={demandData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="product" tick={{ fontSize: 12 }} />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="unitsSold" fill="#f77f00" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
 
-        <Link
-          to="/dashboard/wholesaler/products/new"
-          className="inline-flex w-fit items-center gap-2 rounded-lg bg-[#f77f00] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#d62828]"
-        >
-          <Plus size={16} />
-          Add Product
-        </Link>
-      </div>
-
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => void loadDashboard()}
-          disabled={isLoading}
-          className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-[#003049] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <RefreshCw size={13} className={isLoading ? "animate-spin" : ""} />
-          Refresh
-        </button>
-
-        {lastUpdated && (
-          <span className="text-xs text-gray-400">
-            Last updated {lastUpdated.toLocaleTimeString()}
-          </span>
-        )}
-      </div>
-
-      {error && !isLoading && (
-        <ErrorState message={error} onRetry={() => void loadDashboard()} />
-      )}
-
-      {!error && (
-        <>
-          <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {isLoading || !stats ? (
-              Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="rounded-lg bg-white p-4 shadow">
-                  <Skeleton className="mb-2 h-4 w-24" />
-                  <Skeleton className="h-8 w-16" />
-                </div>
-              ))
-            ) : (
-              <>
-                <StatCard label="Total Products" value={stats.totalProducts} />
-
-                <StatCard
-                  label="Total Categories"
-                  value={stats.totalCategories}
-                />
-
-                <StatCard
-                  label="Low Stock Items"
-                  value={stats.lowStockProducts}
-                  valueClassName="text-[#d62828]"
-                />
-              </>
-            )}
-          </section>
-
-          <section className="rounded-lg bg-white p-4 shadow">
-            <div className="mb-4 flex items-center gap-2">
-              <AlertTriangle size={18} className="text-[#d62828]" />
-
-              <div>
-                <h2 className="font-semibold text-[#003049]">
-                  Products Needing Attention
-                </h2>
-
-                <p className="mt-1 text-xs text-gray-500">
-                  Low-stock and out-of-stock products.
-                </p>
-              </div>
-            </div>
-
-            {isLoading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            ) : lowStockItems.length === 0 ? (
-              <div className="rounded-lg border-2 border-dashed px-4 py-10 text-center">
-                <p className="text-sm font-medium text-[#003049]">
-                  Stock levels look healthy
-                </p>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  No products currently require attention.
-                </p>
-              </div>
-            ) : (
-              <ul>
-                {lowStockItems.map((item) => (
-                  <li
-                    key={item.product_id}
-                    className="flex flex-col gap-2 border-b py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div>
-                      <Link
-                        to={`/products/${item.product_id}`}
-                        className="text-sm font-medium text-[#003049] hover:underline"
-                      >
-                        {item.product_name}
-                      </Link>
-
-                      <p className="mt-1 text-xs text-gray-500">
-                        SKU: {item.sku}
-                      </p>
-                    </div>
-
-                    <span className="w-fit rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-[#d62828]">
-                      {item.stock_quantity} remaining
-                    </span>
-                  </li>
+        <div className="bg-white rounded-lg shadow p-4">
+          <h2 className="font-semibold mb-4 text-[#003049]">Stock Status</h2>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie data={stockData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                {stockData.map((entry, index) => (
+                  <Cell key={entry.name} fill={STOCK_COLORS[index % STOCK_COLORS.length]} />
                 ))}
-              </ul>
-            )}
-          </section>
-        </>
-      )}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg shadow p-4">
+          <h2 className="font-semibold mb-4 text-[#003049] flex items-center gap-2">
+            <AlertTriangle size={18} className="text-[#d62828]" />
+            Low Stock Alerts
+          </h2>
+          <ul>
+            {lowStockItems.map((item) => (
+              <li key={item.name} className="flex justify-between items-center py-2 border-b last:border-b-0">
+                <span className="text-sm text-gray-700">{item.name}</span>
+                <span className="text-sm font-semibold text-[#d62828]">{item.quantity} left</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4">
+          <h2 className="font-semibold mb-4 text-[#003049]">Recent Orders</h2>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-gray-500 border-b">
+                <th className="pb-2">Customer</th>
+                <th className="pb-2">Items</th>
+                <th className="pb-2">Total</th>
+                <th className="pb-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentOrders.map((order) => (
+                <tr key={order.id} className="border-b last:border-b-0">
+                  <td className="py-2">{order.customer}</td>
+                  <td className="py-2">{order.items}</td>
+                  <td className="py-2">{order.total}</td>
+                  <td className="py-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[order.status]}`}>
+                      {order.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </DashboardLayout>
   );
 }
 
-type StatCardProps = {
-  label: string;
-  value: number;
-  valueClassName?: string;
-};
-
-function StatCard({
-  label,
-  value,
-  valueClassName = "text-[#003049]",
-}: StatCardProps) {
-  return (
-    <div className="rounded-lg bg-white p-4 shadow">
-      <p className="text-sm text-gray-500">{label}</p>
-
-      <p className={`mt-1 text-2xl font-bold ${valueClassName}`}>{value}</p>
-    </div>
-  );
-}
+export default WholesalerDashboard;
