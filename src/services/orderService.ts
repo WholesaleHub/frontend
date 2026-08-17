@@ -13,19 +13,38 @@ export type OrderItem = {
   product?: Product;
 };
 
+export type OrderStatus =
+  "PENDING" | "CONFIRMED" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+
+export type OrderFilters = {
+  status?: OrderStatus | "";
+  customer?: string;
+  sort?: "asc" | "desc";
+};
+
 export type Order = {
   order_id: number;
   customer_id: number;
   created_by_user_id: string;
   order_date: string;
-  status: string;
+  status: OrderStatus;
   total_amount: string;
   created_at: string;
   orderItems: OrderItem[];
-  customer?: { customer_id: number; [key: string]: unknown };
+  customer?: {
+    customer_id: number;
+    business_name: string;
+    business_location?: string;
+    contact_person?: string;
+    phone?: string;
+  };
 };
 
-export type CreateOrderItemPayload = { product_id: number; quantity: number };
+export type CreateOrderItemPayload = {
+  product_id: number;
+  quantity: number;
+};
+
 export type CreateOrderPayload = {
   items: CreateOrderItemPayload[];
 };
@@ -58,21 +77,39 @@ export async function createOrder(
   return handleResponse<Order>(response);
 }
 
-export async function getOrders(token: string): Promise<Order[]> {
-  const response = await fetch(`${API_BASE_URL}/orders`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const result = await handleResponse<unknown>(response);
-  if (Array.isArray(result)) return result as Order[];
-  if (
-    result &&
-    typeof result === "object" &&
-    Array.isArray((result as { data: unknown }).data)
-  ) {
-    return (result as { data: Order[] }).data;
+export async function getOrders(
+  token: string,
+  filters: OrderFilters = {},
+): Promise<Order[]> {
+  const params = new URLSearchParams();
+
+  if (filters.status) params.set("status", filters.status);
+  if (filters.customer?.trim()) {
+    params.set("customer", filters.customer.trim());
   }
-  console.error("Unexpected response shape from GET /orders:", result);
-  return [];
+  if (filters.sort) params.set("sort", filters.sort);
+
+  const query = params.toString();
+  const response = await fetch(
+    `${API_BASE_URL}/orders${query ? `?${query}` : ""}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  return handleResponse<Order[]>(response);
+}
+
+export async function getMyOrders(token: string): Promise<Order[]> {
+  const response = await fetch(`${API_BASE_URL}/orders/my-orders`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return handleResponse<Order[]>(response);
 }
 
 /**
@@ -102,7 +139,7 @@ export async function getOrderById(
 export async function updateOrderStatus(
   token: string,
   id: number,
-  status: string,
+  status: OrderStatus,
 ): Promise<Order> {
   const response = await fetch(`${API_BASE_URL}/orders/${id}/status`, {
     method: "PATCH",
