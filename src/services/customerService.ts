@@ -156,23 +156,11 @@ export async function getCustomerById(
   token: string,
   customerId: number,
 ): Promise<CustomerDetails> {
-  const response = await fetch(
-    `${API_BASE_URL}/customers/${customerId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  const response = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
     },
-  );
+  });
 
-  return handleResponse<CustomerDetails>(
-    response,
-    "Failed to load customer.",
-  );
-}
-
-export function resolveCustomerImageUrl(
-  customer: CustomerDetails,
-): string | undefined {
-  return undefined;
+  return handleResponse<CustomerDetails>(response, "Failed to load customer.");
 }
