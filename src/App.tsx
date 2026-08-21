@@ -17,7 +17,6 @@ import NotFoundPage from "./pages/NotFoundPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminCustomersPage from "./pages/admin/AdminCustomersPage";
 import WholesalerOrders from "./pages/wholesaler/WholesalerOrders";
-import CustomerDetailsPage from "./pages/wholesaler/CustomerDetailsPage";
 
 function App() {
   return (
@@ -165,7 +164,6 @@ function App() {
           }
         />
         <Route path="*" element={<NotFoundPage />} />
-        <Route path="/dashboard/wholesaler/customers/:id" element={<ProtectedRoute allowedRoles={["WHOLESALER"]}><CustomerDetailsPage /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
