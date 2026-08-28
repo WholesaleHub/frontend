@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Package } from "lucide-react";
 import { resolveImageUrl } from "../../services/productService";
 
@@ -15,17 +15,14 @@ export default function ProductImage({
   className = "",
   iconSize = 32,
 }: ProductImageProps) {
-  const [failed, setFailed] = useState(false);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const resolved = resolveImageUrl(imageUrl);
-
-  useEffect(() => {
-    setFailed(false);
-  }, [resolved]);
+  const failed = resolved !== null && resolved === failedUrl;
 
   if (!resolved || failed) {
     return (
       <div
-        className={`bg-gray-100 flex items-center justify-center ${className}`}
+        className={`flex items-center justify-center bg-gray-100 ${className}`}
         role="img"
         aria-label={`${alt} image unavailable`}
       >
@@ -39,7 +36,7 @@ export default function ProductImage({
       src={resolved}
       alt={alt}
       className={`object-cover ${className}`}
-      onError={() => setFailed(true)}
+      onError={() => setFailedUrl(resolved)}
     />
   );
 }

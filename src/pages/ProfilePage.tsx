@@ -31,13 +31,16 @@ function ProfilePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  function applyProfile(nextProfile: CustomerProfile) {
-    setProfile(nextProfile);
-    setBusinessName(nextProfile.business_name ?? "");
-    setBusinessLocation(nextProfile.business_location ?? "");
-    setContactPerson(nextProfile.contact_person || user?.fullName || "");
-    setPhone(nextProfile.phone ?? "");
-  }
+  const applyProfile = useCallback(
+    (nextProfile: CustomerProfile) => {
+      setProfile(nextProfile);
+      setBusinessName(nextProfile.business_name ?? "");
+      setBusinessLocation(nextProfile.business_location ?? "");
+      setContactPerson(nextProfile.contact_person || user?.fullName || "");
+      setPhone(nextProfile.phone ?? "");
+    },
+    [user?.fullName],
+  );
 
   const loadProfile = useCallback(async () => {
     if (!isRetailer || !token) {
@@ -67,7 +70,7 @@ function ProfilePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [isRetailer, token, user?.fullName]);
+  }, [applyProfile, isRetailer, token]);
 
   useEffect(() => {
     void loadProfile();
