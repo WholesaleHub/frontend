@@ -108,6 +108,15 @@ function App() {
         />
 
         <Route
+          path="/dashboard/retailer/orders/:id"
+          element={
+            <ProtectedRoute allowedRoles={["RETAILER"]}>
+              <OrderDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/products/:id"
           element={
             <ProtectedRoute>
@@ -147,6 +156,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/dashboard/admin"
           element={

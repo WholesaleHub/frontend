@@ -10,6 +10,7 @@ import {
 } from "../../config/orderStatusColors";
 import { useAuth } from "../../context/AuthContext";
 import {
+  getMyOrderById,
   getOrderById,
   updateOrderStatus,
   type Order,
@@ -25,6 +26,14 @@ const orderStatuses: OrderStatus[] = [
   "SHIPPED",
   "DELIVERED",
   "CANCELLED",
+];
+
+const trackingStatuses: OrderStatus[] = [
+  "PENDING",
+  "CONFIRMED",
+  "PACKED",
+  "SHIPPED",
+  "DELIVERED",
 ];
 
 const currency = new Intl.NumberFormat("en-KE", {
@@ -66,7 +75,9 @@ export default function OrderDetailsPage() {
     setError("");
 
     try {
-      const data = await getOrderById(id, token);
+      const data = isWholesaler
+        ? await getOrderById(id, token)
+        : await getMyOrderById(id, token);
       setOrder(data);
       setSelectedStatus(data.status);
     } catch (err) {
@@ -76,7 +87,7 @@ export default function OrderDetailsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [id, token]);
+  }, [id, isWholesaler, token]);
 
   useEffect(() => {
     void loadOrder();
@@ -119,6 +130,10 @@ export default function OrderDetailsPage() {
   }
 
   const normalizedStatus = order?.status.toUpperCase() ?? "";
+
+  const currentStatusIndex = order
+    ? trackingStatuses.indexOf(order.status)
+    : -1;
 
   return (
     <DashboardLayout navItems={navItems}>
@@ -212,6 +227,65 @@ export default function OrderDetailsPage() {
               </span>
             )}
           </div>
+
+          {order.status === "CANCELLED" ? (
+            <div
+              className="border-b bg-red-50 px-6 py-4 text-sm font-medium text-red-700"
+              role="status"
+            >
+              This order was cancelled.
+            </div>
+          ) : (
+            <section
+              className="border-b px-4 py-5 sm:px-6"
+              aria-labelledby="order-progress-heading"
+            >
+              <h2
+                id="order-progress-heading"
+                className="mb-4 font-semibold text-[#003049]"
+              >
+                Order progress
+              </h2>
+
+              <ol
+                className="grid grid-cols-2 gap-4 sm:grid-cols-5"
+                aria-label="Order status progression"
+              >
+                {trackingStatuses.map((trackingStatus, index) => {
+                  const isComplete = index < currentStatusIndex;
+                  const isCurrent = index === currentStatusIndex;
+                  const hasReachedStatus = isComplete || isCurrent;
+
+                  return (
+                    <li
+                      key={trackingStatus}
+                      className="flex items-center gap-2"
+                      aria-current={isCurrent ? "step" : undefined}
+                    >
+                      <span
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+                          hasReachedStatus
+                            ? "bg-[#f77f00] text-white"
+                            : "bg-gray-100 text-gray-400"
+                        }`}
+                        aria-hidden="true"
+                      >
+                        {isComplete ? <CheckCircle2 size={17} /> : index + 1}
+                      </span>
+
+                      <span
+                        className={`text-xs font-medium ${
+                          hasReachedStatus ? "text-[#003049]" : "text-gray-400"
+                        }`}
+                      >
+                        {orderStatusLabels[trackingStatus]}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
+          )}
 
           {isWholesaler && (statusError || statusSuccess) && (
             <div

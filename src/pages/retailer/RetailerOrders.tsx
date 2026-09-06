@@ -7,7 +7,11 @@ import {
   statusColors,
 } from "../../config/orderStatusColors";
 import { useAuth } from "../../context/AuthContext";
-import { getMyOrders, type Order } from "../../services/orderService";
+import {
+  getMyOrders,
+  type Order,
+  type OrderHistoryPagination,
+} from "../../services/orderService";
 import ErrorState from "../../components/ui/ErrorState";
 import { SkeletonTableRow } from "../../components/ui/Skeleton";
 
@@ -20,6 +24,8 @@ const STATUSES = [
   "DELIVERED",
   "CANCELLED",
 ];
+
+const PAGE_SIZE = 10;
 
 const currency = new Intl.NumberFormat("en-KE", {
   style: "currency",
@@ -35,26 +41,43 @@ const date = new Intl.DateTimeFormat("en-KE", {
 export default function RetailerOrders() {
   const { token } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<OrderHistoryPagination>({
+    page: 1,
+    limit: PAGE_SIZE,
+    total: 0,
+    totalPages: 0,
+  });
   const [status, setStatus] = useState("ALL");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   const loadOrders = useCallback(async () => {
-    if (!token) return;
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
 
     setIsLoading(true);
     setError("");
 
     try {
-      setOrders(await getMyOrders(token));
+      const response = await getMyOrders(token, {
+        page,
+        limit: PAGE_SIZE,
+      });
+
+      setOrders(response.data);
+      setPagination(response.pagination);
     } catch (err) {
+      setOrders([]);
       setError(
         err instanceof Error ? err.message : "Failed to load your orders.",
       );
     } finally {
       setIsLoading(false);
     }
-  }, [token]);
+  }, [page, token]);
 
   useEffect(() => {
     void loadOrders();
@@ -118,7 +141,9 @@ export default function RetailerOrders() {
                       colSpan={6}
                       className="px-6 py-12 text-center text-gray-500"
                     >
-                      No orders match this filter.
+                      {orders.length === 0
+                        ? "You have not placed any orders yet."
+                        : "No orders match this status on the current page."}
                     </td>
                   </tr>
                 ) : (
@@ -171,6 +196,36 @@ export default function RetailerOrders() {
             </table>
           </div>
         </div>
+      )}
+      {!error && !isLoading && pagination.totalPages > 1 && (
+        <nav
+          className="mt-6 flex flex-wrap items-center justify-center gap-3"
+          aria-label="Order history pagination"
+        >
+          <button
+            type="button"
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            disabled={page <= 1}
+            className="rounded-lg border px-4 py-2 text-sm font-medium text-[#003049] transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          <span className="text-sm text-gray-600" aria-live="polite">
+            Page {pagination.page} of {pagination.totalPages}
+          </span>
+
+          <button
+            type="button"
+            onClick={() =>
+              setPage((current) => Math.min(pagination.totalPages, current + 1))
+            }
+            disabled={page >= pagination.totalPages}
+            className="rounded-lg border px-4 py-2 text-sm font-medium text-[#003049] transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
+        </nav>
       )}
     </DashboardLayout>
   );
