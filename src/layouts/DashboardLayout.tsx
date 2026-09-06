@@ -29,7 +29,7 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const { user, logout } = useAuth();
-  const { cart } = useCart();
+  const { cartCount } = useCart();
   const location = useLocation();
 
   const isRetailer = user?.role === "RETAILER";
@@ -119,13 +119,13 @@ export default function DashboardLayout({
               <Link
                 to="/cart"
                 className="relative text-gray-600 hover:text-gray-900"
-                aria-label={`Shopping cart with ${cart.length} items`}
+                aria-label={`Shopping cart with ${cartCount} items`}
               >
                 <ShoppingCart size={22} />
 
-                {cart.length > 0 && (
+                {cartCount > 0 && (
                   <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#f77f00] px-1 text-xs text-white">
-                    {cart.length}
+                    {cartCount}
                   </span>
                 )}
               </Link>

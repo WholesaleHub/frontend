@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
 export type CartItem = {
   product_id: string;
@@ -38,15 +45,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [cart]);
 
   const addToCart = (product: Omit<CartItem, "quantity">) => {
+    if (product.stock_quantity <= 0) {
+      return;
+    }
     setCart((prev) => {
-      const existing = prev.find((item) => item.product_id === product.product_id);
+      const existing = prev.find(
+        (item) => item.product_id === product.product_id,
+      );
       if (existing) {
-        const nextQty = Math.min(existing.quantity + 1, existing.stock_quantity);
+        const nextQty = Math.min(
+          existing.quantity + 1,
+          existing.stock_quantity,
+        );
         return prev.map((item) =>
-          item.product_id === product.product_id ? { ...item, quantity: nextQty } : item
+          item.product_id === product.product_id
+            ? { ...item, quantity: nextQty }
+            : item,
         );
       }
-      return [...prev, { ...product, quantity: Math.min(1, product.stock_quantity) }];
+      return [...prev, { ...product, quantity: 1 }];
     });
   };
 
@@ -58,31 +75,50 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCart((prev) =>
       prev.map((item) =>
         item.product_id === productId
-          ? { ...item, quantity: Math.min(item.quantity + 1, item.stock_quantity) }
-          : item
-      )
+          ? {
+              ...item,
+              quantity: Math.min(item.quantity + 1, item.stock_quantity),
+            }
+          : item,
+      ),
     );
   };
 
   const decreaseQuantity = (productId: string) => {
     setCart((prev) =>
       prev
-        .map((item) => (item.product_id === productId ? { ...item, quantity: item.quantity - 1 } : item))
-        .filter((item) => item.quantity > 0)
+        .map((item) =>
+          item.product_id === productId
+            ? { ...item, quantity: item.quantity - 1 }
+            : item,
+        )
+        .filter((item) => item.quantity > 0),
     );
   };
 
   const clearCart = () => setCart([]);
 
-  const cartCount = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
+  const cartCount = useMemo(
+    () => cart.reduce((sum, item) => sum + item.quantity, 0),
+    [cart],
+  );
   const cartTotal = useMemo(
     () => cart.reduce((sum, item) => sum + item.unit_price * item.quantity, 0),
-    [cart]
+    [cart],
   );
 
   return (
     <CartContext.Provider
-      value={{ cart, cartCount, cartTotal, addToCart, removeFromCart, increaseQuantity, decreaseQuantity, clearCart }}
+      value={{
+        cart,
+        cartCount,
+        cartTotal,
+        addToCart,
+        removeFromCart,
+        increaseQuantity,
+        decreaseQuantity,
+        clearCart,
+      }}
     >
       {children}
     </CartContext.Provider>
