@@ -1,9 +1,19 @@
-import { Users } from "lucide-react";
+import { Building2, ScrollText, UserRoundCog } from "lucide-react";
 
 export const adminNavItems = [
   {
-    path: "/dashboard/admin",
+    path: "/dashboard/admin/customers",
     label: "Customers",
-    icon: Users,
+    icon: Building2,
+  },
+  {
+    path: "/dashboard/admin/users",
+    label: "Users",
+    icon: UserRoundCog,
+  },
+  {
+    path: "/dashboard/admin/audit",
+    label: "Audit Log",
+    icon: ScrollText,
   },
 ];
