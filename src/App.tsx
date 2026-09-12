@@ -17,6 +17,9 @@ import NotFoundPage from "./pages/NotFoundPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminCustomersPage from "./pages/admin/AdminCustomersPage";
 import WholesalerOrders from "./pages/wholesaler/WholesalerOrders";
+import { lazy, Suspense } from "react";
+
+const AdminDashboard = lazy(() => import("./pages/dashboards/AdminDashboard"));
 
 function App() {
   return (
@@ -151,7 +154,18 @@ function App() {
           path="/dashboard/admin"
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminCustomersPage />
+              <Suspense
+                fallback={
+                  <div
+                    className="flex min-h-screen items-center justify-center bg-gray-50 text-sm text-gray-500"
+                    role="status"
+                  >
+                    Loading reporting dashboard...
+                  </div>
+                }
+              >
+                <AdminDashboard />
+              </Suspense>
             </ProtectedRoute>
           }
         />
