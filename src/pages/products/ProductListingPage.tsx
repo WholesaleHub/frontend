@@ -31,33 +31,28 @@ export default function ProductListingPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const loadAll = useCallback(async () => {
-    if (!token) return;
+  const loadProducts = useCallback(async () => {
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError("");
+
     try {
       const productsResponse = await getProducts(token, {
         page,
         limit: PAGE_SIZE,
-        search: searchTerm || undefined,
+        search: searchTerm.trim() || undefined,
         category: categoryFilter !== "all" ? Number(categoryFilter) : undefined,
         availability: statusFilter !== "all" ? statusFilter : undefined,
       });
 
       setProducts(productsResponse.data);
       setTotalPages(productsResponse.meta.totalPages);
-
-      try {
-        const categoriesData = await getCategories(token);
-        setCategories(categoriesData);
-      } catch (categoryError) {
-        console.error("Failed to load categories:", categoryError);
-
-        setCategories([]);
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load products.");
-
       setProducts([]);
       setTotalPages(1);
     } finally {
@@ -65,13 +60,54 @@ export default function ProductListingPage() {
     }
   }, [token, page, searchTerm, categoryFilter, statusFilter]);
 
-  useEffect(() => {
-    void loadAll();
-  }, [loadAll]);
+  const loadCategories = useCallback(async () => {
+    if (!token) {
+      setCategories([]);
+      return;
+    }
+
+    try {
+      setCategories(await getCategories(token));
+    } catch (err) {
+      console.error("Failed to load categories:", err);
+      setCategories([]);
+    }
+  }, [token]);
 
   useEffect(() => {
+    void loadProducts();
+  }, [loadProducts]);
+
+  useEffect(() => {
+    void loadCategories();
+  }, [loadCategories]);
+
+  function handleSearchChange(value: string) {
+    setSearchTerm(value);
     setPage(1);
-  }, [searchTerm, categoryFilter, statusFilter]);
+  }
+
+  function handleCategoryChange(value: string) {
+    setCategoryFilter(value);
+    setPage(1);
+  }
+
+  function handleStatusChange(value: string) {
+    setStatusFilter(value);
+    setPage(1);
+  }
+
+  function clearFilters() {
+    setSearchTerm("");
+    setCategoryFilter("all");
+    setStatusFilter("all");
+    setPage(1);
+  }
+
+  const hasActiveFilters =
+    searchTerm.trim() !== "" ||
+    categoryFilter !== "all" ||
+    statusFilter !== "all";
 
   return (
     <DashboardLayout navItems={retailerNavItems}>
@@ -89,13 +125,14 @@ export default function ProductListingPage() {
             type="text"
             placeholder="Search products..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full border rounded-lg pl-9 pr-3 py-2 text-sm"
           />
         </div>
         <select
+          aria-label="Category"
           value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
+          onChange={(e) => handleCategoryChange(e.target.value)}
           className="border rounded-lg px-3 py-2 text-sm bg-white"
         >
           <option value="all">All Categories</option>
@@ -106,8 +143,9 @@ export default function ProductListingPage() {
           ))}
         </select>
         <select
+          aria-label="Availability"
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => handleStatusChange(e.target.value)}
           className="border rounded-lg px-3 py-2 text-sm bg-white"
         >
           <option value="all">All Status</option>
@@ -115,9 +153,19 @@ export default function ProductListingPage() {
           <option value="LOW_STOCK">Low Stock</option>
           <option value="OUT_OF_STOCK">Out of Stock</option>
         </select>
+        <button
+          type="button"
+          onClick={clearFilters}
+          disabled={!hasActiveFilters}
+          className="rounded-lg border px-4 py-2 text-sm font-medium text-[#003049] transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Clear Filters
+        </button>
       </div>
 
-      {error && !isLoading && <ErrorState message={error} onRetry={loadAll} />}
+      {error && !isLoading && (
+        <ErrorState message={error} onRetry={loadProducts} />
+      )}
 
       {!error && (
         <>
@@ -183,25 +231,36 @@ export default function ProductListingPage() {
           </div>
 
           {!isLoading && totalPages > 1 && (
-            <div className="flex justify-center items-center gap-3 mt-6">
+            <nav
+              className="mt-6 flex flex-wrap items-center justify-center gap-3"
+              aria-label="Product pagination"
+            >
               <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                type="button"
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
                 disabled={page === 1}
+                className="rounded-lg border px-4 py-2 text-sm font-medium text-[#003049] transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="Go to previous product page"
               >
                 Previous
               </button>
 
-              <span>
+              <span className="text-sm text-gray-600" aria-live="polite">
                 Page {page} of {totalPages}
               </span>
 
               <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                type="button"
+                onClick={() =>
+                  setPage((current) => Math.min(totalPages, current + 1))
+                }
                 disabled={page === totalPages}
+                className="rounded-lg border px-4 py-2 text-sm font-medium text-[#003049] transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="Go to next product page"
               >
                 Next
               </button>
-            </div>
+            </nav>
           )}
         </>
       )}
