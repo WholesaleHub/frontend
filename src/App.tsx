@@ -16,6 +16,8 @@ import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminCustomersPage from "./pages/admin/AdminCustomersPage";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminAuditLogPage from "./pages/admin/AdminAuditLogPage";
 import WholesalerOrders from "./pages/wholesaler/WholesalerOrders";
 import ForgotPasswordPage from "./pages/ForgotPassword/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPassword/ResetPasswordPage";
@@ -167,6 +169,23 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]}>
               <AdminCustomersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/users"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminUsersPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/admin/audit"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminAuditLogPage />
             </ProtectedRoute>
           }
         />
