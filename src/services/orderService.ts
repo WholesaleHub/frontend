@@ -40,6 +40,23 @@ export type Order = {
   };
 };
 
+export type OrderHistoryPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export type OrderHistoryResponse = {
+  data: Order[];
+  pagination: OrderHistoryPagination;
+};
+
+export type OrderHistoryQuery = {
+  page?: number;
+  limit?: number;
+};
+
 export type CreateOrderItemPayload = {
   product_id: number;
   quantity: number;
@@ -101,18 +118,45 @@ export async function getOrders(
 
   return handleResponse<Order[]>(response);
 }
-/**
- * Retrieves only the authenticated retailer's orders.
- * The backend scopes the result using the JWT.
- */
-export async function getMyOrders(token: string): Promise<Order[]> {
-  const response = await fetch(`${API_BASE_URL}/orders/my-orders`, {
+
+export async function getMyOrders(
+  token: string,
+  query: OrderHistoryQuery = {},
+): Promise<OrderHistoryResponse> {
+  const params = new URLSearchParams();
+
+  if (query.page) {
+    params.set("page", String(query.page));
+  }
+
+  if (query.limit) {
+    params.set("limit", String(query.limit));
+  }
+
+  const queryString = params.toString();
+  const response = await fetch(
+    `${API_BASE_URL}/orders/my-orders${queryString ? `?${queryString}` : ""}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  return handleResponse<OrderHistoryResponse>(response);
+}
+
+export async function getMyOrderById(
+  id: string | number,
+  token: string,
+): Promise<Order> {
+  const response = await fetch(`${API_BASE_URL}/orders/my-orders/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
 
-  return handleResponse<Order[]>(response);
+  return handleResponse<Order>(response);
 }
 
 export async function getOrderById(
