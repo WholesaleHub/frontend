@@ -8,7 +8,14 @@ import ProductImage from "../../components/ui/ProductImage";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 export default function ShoppingCartPage() {
-  const { cart, cartTotal, increaseQuantity, decreaseQuantity, removeFromCart, clearCart } = useCart();
+  const {
+    cart,
+    cartTotal,
+    increaseQuantity,
+    decreaseQuantity,
+    removeFromCart,
+    clearCart,
+  } = useCart();
   const navigate = useNavigate();
 
   const [pendingRemove, setPendingRemove] = useState<string | null>(null);
@@ -16,10 +23,11 @@ export default function ShoppingCartPage() {
 
   return (
     <DashboardLayout navItems={retailerNavItems}>
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <h1 className="text-3xl font-bold text-[#003049]">Shopping Cart</h1>
         {cart.length > 0 && (
           <button
+            type="button"
             onClick={() => setConfirmClear(true)}
             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
           >
@@ -31,8 +39,12 @@ export default function ShoppingCartPage() {
       {cart.length === 0 ? (
         <div className="bg-white rounded-xl shadow-md p-12 text-center">
           <ShoppingCart size={70} className="mx-auto text-gray-300 mb-5" />
-          <h2 className="text-2xl font-semibold text-gray-700">Your cart is empty</h2>
-          <p className="text-gray-500 mt-2 mb-6">Browse products and add them to your shopping cart.</p>
+          <h2 className="text-2xl font-semibold text-gray-700">
+            Your cart is empty
+          </h2>
+          <p className="text-gray-500 mt-2 mb-6">
+            Browse products and add them to your shopping cart.
+          </p>
           <Link
             to="/dashboard/retailer/browse"
             className="inline-flex items-center gap-2 bg-[#003049] hover:bg-[#00253b] text-white px-6 py-3 rounded-lg"
@@ -58,29 +70,41 @@ export default function ShoppingCartPage() {
                       iconSize={28}
                     />
                     <div>
-                      <h2 className="font-bold text-lg text-[#003049]">{item.product_name}</h2>
+                      <h2 className="font-bold text-lg text-[#003049]">
+                        {item.product_name}
+                      </h2>
                       <p className="text-[#f77f00] font-semibold mt-1">
                         Ksh {item.unit_price.toLocaleString()}
                       </p>
-                      <p className="text-sm text-gray-500 mt-1">Stock available: {item.stock_quantity}</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Stock available: {item.stock_quantity}
+                      </p>
                       {atMaxStock && (
-                        <p className="text-xs text-[#d62828] mt-1">Maximum available quantity reached</p>
+                        <p className="text-xs text-[#d62828] mt-1">
+                          Maximum available quantity reached
+                        </p>
                       )}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <button
+                      type="button"
                       onClick={() => decreaseQuantity(item.product_id)}
                       className="bg-gray-200 hover:bg-gray-300 rounded-lg p-2"
+                      aria-label={`Decrease ${item.product_name} quantity`}
                     >
                       <Minus size={18} />
                     </button>
-                    <span className="font-semibold text-lg w-8 text-center">{item.quantity}</span>
+                    <span className="font-semibold text-lg w-8 text-center">
+                      {item.quantity}
+                    </span>
                     <button
+                      type="button"
                       onClick={() => increaseQuantity(item.product_id)}
                       disabled={atMaxStock}
                       className="bg-gray-200 hover:bg-gray-300 rounded-lg p-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                      aria-label={`Increase ${item.product_name} quantity`}
                     >
                       <Plus size={18} />
                     </button>
@@ -91,6 +115,7 @@ export default function ShoppingCartPage() {
                       Ksh {(item.unit_price * item.quantity).toLocaleString()}
                     </p>
                     <button
+                      type="button"
                       onClick={() => setPendingRemove(item.product_id)}
                       className="mt-3 inline-flex items-center gap-2 text-red-600 hover:text-red-700"
                     >
@@ -102,12 +127,15 @@ export default function ShoppingCartPage() {
             })}
           </div>
 
-          <div className="bg-white rounded-xl shadow-md mt-8 p-6 flex justify-between items-center">
+          <div className="mt-8 flex flex-col items-stretch justify-between gap-5 rounded-xl bg-white p-6 shadow-md sm:flex-row sm:items-center">
             <div>
               <h2 className="text-xl font-bold text-[#003049]">Total</h2>
-              <p className="text-3xl font-bold text-[#f77f00] mt-2">Ksh {cartTotal.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-[#f77f00] mt-2">
+                Ksh {cartTotal.toLocaleString()}
+              </p>
             </div>
             <button
+              type="button"
               onClick={() => navigate("/checkout")}
               className="bg-[#003049] hover:bg-[#00253b] text-white px-8 py-3 rounded-lg font-medium"
             >

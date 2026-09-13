@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   Building2,
+  CheckCircle2,
   MapPin,
   Pencil,
   Phone,
@@ -23,16 +24,12 @@ import ProductImage from "../../components/ui/ProductImage";
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useCart();
   const { token } = useAuth();
-  const navigate = useNavigate();
 
-  const [profile, setProfile] =
-    useState<CustomerProfile | null>(null);
-  const [isProfileLoading, setIsProfileLoading] =
-    useState(true);
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
+  const [profile, setProfile] = useState<CustomerProfile | null>(null);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-
+  const [completedOrderId, setCompletedOrderId] = useState<number | null>(null);
   useEffect(() => {
     if (!token) {
       setIsProfileLoading(false);
@@ -46,8 +43,7 @@ export default function CheckoutPage() {
       setError("");
 
       try {
-        const result =
-          await getMyCustomerProfile(token!);
+        const result = await getMyCustomerProfile(token!);
 
         if (!cancelled) {
           setProfile(result);
@@ -57,7 +53,7 @@ export default function CheckoutPage() {
           setError(
             err instanceof Error
               ? err.message
-              : "Failed to load your business profile."
+              : "Failed to load your business profile.",
           );
         }
       } finally {
@@ -75,12 +71,7 @@ export default function CheckoutPage() {
   }, [token]);
 
   async function handlePlaceOrder() {
-    if (
-      !token ||
-      !profile ||
-      cart.length === 0 ||
-      isSubmitting
-    ) {
+    if (!token || !profile || cart.length === 0 || isSubmitting) {
       return;
     }
 
@@ -88,24 +79,59 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
-      await createOrder(token, {
+      const order = await createOrder(token, {
         items: cart.map((item) => ({
           product_id: Number(item.product_id),
           quantity: item.quantity,
         })),
       });
 
+      setCompletedOrderId(order.order_id);
       clearCart();
-      navigate("/dashboard/retailer/orders");
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to place order."
-      );
+      setError(err instanceof Error ? err.message : "Failed to place order.");
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (completedOrderId !== null) {
+    return (
+      <DashboardLayout navItems={retailerNavItems}>
+        <div className="mx-auto max-w-xl rounded-xl bg-white p-8 text-center shadow-md sm:p-12">
+          <CheckCircle2
+            size={64}
+            className="mx-auto mb-5 text-green-600"
+            aria-hidden="true"
+          />
+
+          <h1 className="text-2xl font-bold text-[#003049]">
+            Order placed successfully
+          </h1>
+
+          <p className="mt-3 text-gray-600">
+            Order #{completedOrderId} has been received and is now being
+            processed.
+          </p>
+
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link
+              to="/dashboard/retailer/orders"
+              className="rounded-lg bg-[#003049] px-6 py-3 font-medium text-white hover:bg-[#00253b]"
+            >
+              View My Orders
+            </Link>
+
+            <Link
+              to="/dashboard/retailer/browse"
+              className="rounded-lg border px-6 py-3 font-medium text-[#003049] hover:bg-gray-50"
+            >
+              Continue Shopping
+            </Link>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   if (cart.length === 0) {
@@ -137,9 +163,7 @@ export default function CheckoutPage() {
         Back to Cart
       </Link>
 
-      <h1 className="text-2xl font-bold text-[#003049] mb-6">
-        Checkout
-      </h1>
+      <h1 className="text-2xl font-bold text-[#003049] mb-6">Checkout</h1>
 
       {error && (
         <p className="bg-red-100 text-red-700 text-sm p-3 rounded mb-4">
@@ -157,8 +181,7 @@ export default function CheckoutPage() {
                 </h2>
 
                 <p className="text-xs text-gray-500 mt-1">
-                  Confirm the business information associated
-                  with this order.
+                  Confirm the business information associated with this order.
                 </p>
               </div>
 
@@ -184,8 +207,7 @@ export default function CheckoutPage() {
                 </p>
 
                 <p className="text-sm text-yellow-700 mt-1">
-                  Complete your business profile before placing
-                  this order.
+                  Complete your business profile before placing this order.
                 </p>
 
                 <Link
@@ -245,9 +267,7 @@ export default function CheckoutPage() {
           </section>
 
           <section className="bg-white rounded-lg shadow p-6">
-            <h2 className="font-semibold text-[#003049] mb-4">
-              Order Summary
-            </h2>
+            <h2 className="font-semibold text-[#003049] mb-4">Order Summary</h2>
 
             <div className="space-y-4">
               {cart.map((item) => (
@@ -275,10 +295,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <p className="font-semibold text-sm text-[#003049]">
-                    Ksh{" "}
-                    {(
-                      item.unit_price * item.quantity
-                    ).toLocaleString()}
+                    Ksh {(item.unit_price * item.quantity).toLocaleString()}
                   </p>
                 </div>
               ))}
@@ -287,32 +304,22 @@ export default function CheckoutPage() {
         </div>
 
         <aside className="bg-white rounded-lg shadow p-6 h-fit">
-          <h2 className="font-semibold text-[#003049] mb-4">
-            Total
-          </h2>
+          <h2 className="font-semibold text-[#003049] mb-4">Total</h2>
 
           <p className="text-3xl font-bold text-[#f77f00] mb-6">
             Ksh {cartTotal.toLocaleString()}
           </p>
 
           <div className="flex items-start gap-2 text-xs text-gray-500 mb-6">
-            <ShieldCheck
-              size={16}
-              className="text-green-600 shrink-0 mt-0.5"
-            />
-
-            Final pricing and stock availability are verified
-            by the server when your order is placed.
+            <ShieldCheck size={16} className="text-green-600 shrink-0 mt-0.5" />
+            Final pricing and stock availability are verified by the server when
+            your order is placed.
           </div>
 
           <button
             type="button"
             onClick={handlePlaceOrder}
-            disabled={
-              isSubmitting ||
-              isProfileLoading ||
-              !profile
-            }
+            disabled={isSubmitting || isProfileLoading || !profile}
             className="w-full bg-[#003049] hover:bg-[#00253b] text-white py-3 rounded-lg font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {isProfileLoading
