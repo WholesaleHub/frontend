@@ -44,6 +44,10 @@ export type ForgotPasswordResponse = MessageResponse & {
   resetToken?: string;
 };
 
+export type ResendVerificationResponse = MessageResponse & {
+  verificationToken?: string;
+};
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     throw new Error(
@@ -125,4 +129,18 @@ export async function verifyEmail(token: string): Promise<MessageResponse> {
   });
 
   return handleResponse<MessageResponse>(response);
+}
+
+export async function resendVerification(
+  email: string,
+): Promise<ResendVerificationResponse> {
+  const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  return handleResponse<ResendVerificationResponse>(response);
 }

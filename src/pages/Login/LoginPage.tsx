@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import { loginUser } from "../../services/authService";
+import { loginUser, resendVerification } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
 import logo from "../../assets/logo.svg";
 
@@ -25,13 +25,25 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
 
+  const [canResendVerification, setCanResendVerification] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState("");
+  const [verificationError, setVerificationError] = useState("");
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
+
+    if (name === "email") {
+      setCanResendVerification(false);
+      setVerificationMessage("");
+      setVerificationError("");
+    }
   };
 
   const validateForm = () => {
@@ -54,6 +66,9 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setServerError("");
+    setCanResendVerification(false);
+    setVerificationMessage("");
+    setVerificationError("");
 
     if (!validateForm()) return;
 
@@ -66,13 +81,57 @@ export default function LoginPage() {
       login(data.user, data.accessToken);
       navigate(`/dashboard/${data.user.role.toLowerCase()}`);
     } catch (error) {
-      setServerError(
+      const message =
         error instanceof Error
           ? error.message
-          : "An unexpected error occurred.",
+          : "An unexpected error occurred.";
+
+      setServerError(message);
+      setCanResendVerification(
+        message.toLowerCase().includes("verify your email"),
       );
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    const email = formData.email.trim();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setVerificationError(
+        "Enter a valid email address before requesting verification.",
+      );
+      return;
+    }
+
+    if (isResending) return;
+
+    setIsResending(true);
+    setVerificationMessage("");
+    setVerificationError("");
+
+    try {
+      const response = await resendVerification(email);
+
+      if (response.verificationToken) {
+        navigate(
+          `/verify-email?token=${encodeURIComponent(
+            response.verificationToken,
+          )}`,
+        );
+        return;
+      }
+
+      setVerificationMessage(response.message);
+    } catch (error) {
+      setVerificationError(
+        error instanceof Error
+          ? error.message
+          : "Unable to resend verification. Please try again.",
+      );
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -93,8 +152,42 @@ export default function LoginPage() {
           </p>
 
           {serverError && (
-            <p className="bg-red-100 text-red-700 text-sm p-2 rounded mb-4">
-              {serverError}
+            <div
+              className="mb-4 rounded bg-red-100 p-3 text-sm text-red-700"
+              role="alert"
+            >
+              <p>{serverError}</p>
+
+              {canResendVerification && (
+                <button
+                  type="button"
+                  onClick={() => void handleResendVerification()}
+                  disabled={isResending || isSubmitting}
+                  className="mt-2 font-semibold text-[#d62828] underline hover:no-underline disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isResending
+                    ? "Sending verification..."
+                    : "Resend verification"}
+                </button>
+              )}
+            </div>
+          )}
+
+          {verificationMessage && (
+            <p
+              className="mb-4 rounded bg-green-100 p-3 text-sm text-green-700"
+              role="status"
+            >
+              {verificationMessage}
+            </p>
+          )}
+
+          {verificationError && (
+            <p
+              className="mb-4 rounded bg-red-100 p-3 text-sm text-red-700"
+              role="alert"
+            >
+              {verificationError}
             </p>
           )}
 
