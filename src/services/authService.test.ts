@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   requestPasswordReset,
+  resendVerification,
   resetPassword,
   verifyEmail,
 } from "./authService";
@@ -95,6 +96,33 @@ describe("account recovery auth service", () => {
         },
         body: JSON.stringify({
           token: "verification-token",
+        }),
+      }),
+    );
+  });
+
+  it("requests another verification token using the email address", async () => {
+    mockedFetch.mockResolvedValue(
+      jsonResponse({
+        message: "Verification link generated.",
+        verificationToken: "new-verification-token",
+      }),
+    );
+
+    await expect(resendVerification("retailer@example.com")).resolves.toEqual({
+      message: "Verification link generated.",
+      verificationToken: "new-verification-token",
+    });
+
+    expect(mockedFetch).toHaveBeenCalledWith(
+      expect.stringContaining("/auth/resend-verification"),
+      expect.objectContaining({
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: "retailer@example.com",
         }),
       }),
     );
