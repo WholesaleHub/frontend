@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { loginUser } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
@@ -28,6 +28,14 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const location = useLocation();
+  const routeState = location.state as {
+    from?: string;
+    reason?: string;
+  } | null;
+
+  const sessionExpired = routeState?.reason === "session-expired";
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -53,6 +61,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setServerError("");
 
     if (!validateForm()) return;
@@ -64,7 +73,12 @@ export default function LoginPage() {
         password: formData.password,
       });
       login(data.user, data.accessToken);
-      navigate(`/dashboard/${data.user.role.toLowerCase()}`);
+      const defaultDashboard = `/dashboard/${data.user.role.toLowerCase()}`;
+      const requestedPath = routeState?.from?.startsWith("/")
+        ? routeState.from
+        : defaultDashboard;
+
+      navigate(requestedPath, { replace: true });
     } catch (error) {
       setServerError(
         error instanceof Error
@@ -91,6 +105,15 @@ export default function LoginPage() {
           <p className="text-center text-gray-500 mb-6">
             Sign in to your WholesaleHub account
           </p>
+
+          {sessionExpired && !serverError && (
+            <p
+              className="mb-4 rounded bg-amber-100 p-3 text-sm text-amber-800"
+              role="status"
+            >
+              Your session expired. Please sign in again to continue.
+            </p>
+          )}
 
           {serverError && (
             <p className="bg-red-100 text-red-700 text-sm p-2 rounded mb-4">

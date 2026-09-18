@@ -24,6 +24,7 @@ export default function ProductListingPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [categoryError, setCategoryError] = useState("");
   const { addToCart } = useCart();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -67,9 +68,14 @@ export default function ProductListingPage() {
     }
 
     try {
+      setCategoryError("");
       setCategories(await getCategories(token));
-    } catch (err) {
-      console.error("Failed to load categories:", err);
+    } catch (categoryLoadError) {
+      setCategoryError(
+        categoryLoadError instanceof Error
+          ? categoryLoadError.message
+          : "Categories are temporarily unavailable.",
+      );
       setCategories([]);
     }
   }, [token]);
@@ -114,6 +120,16 @@ export default function ProductListingPage() {
       <h1 className="text-2xl font-bold text-[#003049] mb-6">
         Browse Products
       </h1>
+
+      {categoryError && (
+        <p
+          className="mb-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800"
+          role="status"
+        >
+          Products are available, but category filters could not be loaded.{" "}
+          {categoryError}
+        </p>
+      )}
 
       <div className="bg-white rounded-lg shadow p-4 mb-6 flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-sm">

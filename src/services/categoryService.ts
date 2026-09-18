@@ -13,17 +13,13 @@ function isCategory(value: unknown): value is Category {
   return (
     typeof category.category_id === "number" &&
     typeof category.category_name === "string" &&
-    (
-      category.description === undefined ||
+    (category.description === undefined ||
       category.description === null ||
-      typeof category.description === "string"
-    )
+      typeof category.description === "string")
   );
 }
 
-export async function getCategories(
-  token: string
-): Promise<Category[]> {
+export async function getCategories(token: string): Promise<Category[]> {
   const response = await fetch(`${API_BASE_URL}/categories`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -32,35 +28,18 @@ export async function getCategories(
 
   if (!response.ok) {
     throw new Error(
-      await extractErrorMessage(
-        response,
-        "Failed to load categories."
-      )
+      await extractErrorMessage(response, "Failed to load categories."),
     );
   }
 
   const data: unknown = await response.json();
 
   if (!Array.isArray(data)) {
-    console.error(
-      "Unexpected response from GET /categories:",
-      data
-    );
-
-    throw new Error(
-      "The server returned an invalid categories response."
-    );
+    throw new Error("The server returned an invalid categories response.");
   }
 
   if (!data.every(isCategory)) {
-    console.error(
-      "One or more categories have an invalid structure:",
-      data
-    );
-
-    throw new Error(
-      "The server returned invalid category information."
-    );
+    throw new Error("The server returned invalid category information.");
   }
 
   return data;
@@ -68,28 +47,28 @@ export async function getCategories(
 
 export async function createCategory(
   token: string,
-  category: { category_name: string; description?: string }
+  category: { category_name: string; description?: string },
 ): Promise<Category> {
   const response = await fetch(`${API_BASE_URL}/categories`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(category),
   });
   if (!response.ok) {
-    throw new Error(await extractErrorMessage(response, "Failed to create category."));
+    throw new Error(
+      await extractErrorMessage(response, "Failed to create category."),
+    );
   }
   const data: unknown = await response.json();
 
-if (!isCategory(data)) {
-  console.error(
-    "Unexpected response from POST /categories:",
-    data
-  );
+  if (!isCategory(data)) {
+    throw new Error(
+      "The category was created, but the server returned an invalid response.",
+    );
+  }
 
-  throw new Error(
-    "The category was created, but the server returned an invalid response."
-  );
-}
-
-return data;
+  return data;
 }

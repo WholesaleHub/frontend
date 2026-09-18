@@ -1,4 +1,11 @@
-export async function extractErrorMessage(response: Response, fallback: string): Promise<string> {
+import { AUTH_STORAGE_KEY, SESSION_EXPIRED_EVENT } from "./authEvents";
+export async function extractErrorMessage(
+  response: Response,
+  fallback: string,
+): Promise<string> {
+  if (response.status === 401 && localStorage.getItem(AUTH_STORAGE_KEY)) {
+    window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+  }
   let data: unknown;
   try {
     data = await response.json();

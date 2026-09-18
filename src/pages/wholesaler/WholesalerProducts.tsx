@@ -4,15 +4,19 @@ import { Plus, Trash2, Search, Eye, Pencil } from "lucide-react";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { wholesalerNavItems } from "../../config/wholesalerNav";
 import { useAuth } from "../../context/AuthContext";
-import { getProducts, deleteProduct, type Product, type Category, type StockStatus } from "../../services/productService";
+import {
+  getProducts,
+  deleteProduct,
+  type Product,
+  type Category,
+  type StockStatus,
+} from "../../services/productService";
 import { getCategories } from "../../services/categoryService";
 import { SkeletonTableRow } from "../../components/ui/Skeleton";
 import ErrorModal from "../../components/ui/ErrorModal";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import ProductImage from "../../components/ui/ProductImage";
 import StockBadge from "../../components/ui/StockBadge";
-
-
 
 export default function WholesalerProducts() {
   const { token } = useAuth();
@@ -22,6 +26,7 @@ export default function WholesalerProducts() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [categoryError, setCategoryError] = useState("");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -35,48 +40,35 @@ export default function WholesalerProducts() {
     setIsLoading(true);
     setError("");
     try {
-  const productsResponse = await getProducts(token, {
-    limit: 100,
-    search: searchTerm || undefined,
-    category:
-      categoryFilter !== "all"
-        ? Number(categoryFilter)
-        : undefined,
-    availability:
-      statusFilter !== "all"
-        ? statusFilter
-        : undefined,
-  });
+      const productsResponse = await getProducts(token, {
+        limit: 100,
+        search: searchTerm || undefined,
+        category: categoryFilter !== "all" ? Number(categoryFilter) : undefined,
+        availability: statusFilter !== "all" ? statusFilter : undefined,
+      });
 
-  setProducts(productsResponse.data);
+      setProducts(productsResponse.data);
 
-  try {
-    const categoriesData = await getCategories(token);
-    setCategories(categoriesData);
-  } catch (categoryError) {
-    console.error(
-      "Failed to load categories:",
-      categoryError
-    );
+      try {
+        setCategoryError("");
+        const categoriesData = await getCategories(token);
+        setCategories(categoriesData);
+      } catch (categoryLoadError) {
+        setCategoryError(
+          categoryLoadError instanceof Error
+            ? categoryLoadError.message
+            : "Categories are temporarily unavailable.",
+        );
+        setCategories([]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load products.");
 
-    setCategories([]);
-  }
-} catch (err) {
-  setError(
-    err instanceof Error
-      ? err.message
-      : "Failed to load products."
-  );
-
-  setProducts([]);
-}
-    finally {
+      setProducts([]);
+    } finally {
       setIsLoading(false);
     }
-  }, [ token,
-  searchTerm,
-  categoryFilter,
-  statusFilter,]);
+  }, [token, searchTerm, categoryFilter, statusFilter]);
 
   useEffect(() => {
     loadAll();
@@ -90,7 +82,9 @@ export default function WholesalerProducts() {
       await loadAll();
     } catch (err) {
       setPendingDelete(null);
-      setError(err instanceof Error ? err.message : "Failed to delete product.");
+      setError(
+        err instanceof Error ? err.message : "Failed to delete product.",
+      );
     }
   }
 
@@ -99,8 +93,6 @@ export default function WholesalerProducts() {
     navigate(`/dashboard/wholesaler/products/${pendingEdit.product_id}/edit`);
     setPendingEdit(null);
   }
-
-  
 
   if (error && !isLoading) {
     return (
@@ -115,7 +107,9 @@ export default function WholesalerProducts() {
       <div className="flex justify-between items-center mb-1">
         <div>
           <h1 className="text-2xl font-bold text-[#003049]">Products</h1>
-          <p className="text-sm text-gray-500">Manage and view all products in your store.</p>
+          <p className="text-sm text-gray-500">
+            Manage and view all products in your store.
+          </p>
         </div>
         <Link
           to="/dashboard/wholesaler/products/new"
@@ -124,27 +118,47 @@ export default function WholesalerProducts() {
           <Plus size={16} /> Add Product
         </Link>
       </div>
+      {categoryError && (
+        <p
+          className="mt-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800"
+          role="status"
+        >
+          Products are available, but category filters could not be loaded.{" "}
+          {categoryError}
+        </p>
+      )}
 
       <div className="bg-white rounded-lg shadow p-4 my-6 flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
           <input
-            type="text" placeholder="Search products..." value={searchTerm}
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full border rounded-lg pl-9 pr-3 py-2 text-sm"
           />
         </div>
         <select
-          value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
           className="border rounded-lg px-3 py-2 text-sm bg-white"
         >
           <option value="all">All Categories</option>
           {categories.map((c) => (
-            <option key={c.category_id} value={c.category_id}>{c.category_name}</option>
+            <option key={c.category_id} value={c.category_id}>
+              {c.category_name}
+            </option>
           ))}
         </select>
         <select
-          value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as "all" | StockStatus)}
+          value={statusFilter}
+          onChange={(e) =>
+            setStatusFilter(e.target.value as "all" | StockStatus)
+          }
           className="border rounded-lg px-3 py-2 text-sm bg-white"
         >
           <option value="all">All Status</option>
@@ -169,48 +183,73 @@ export default function WholesalerProducts() {
           </thead>
           <tbody>
             {isLoading ? (
-              Array.from({ length: 4 }).map((_, i) => <SkeletonTableRow key={i} columns={7} />)
+              Array.from({ length: 4 }).map((_, i) => (
+                <SkeletonTableRow key={i} columns={7} />
+              ))
             ) : products.length === 0 ? (
-              <tr><td colSpan={7} className="p-4 text-center text-gray-400">No products found.</td></tr>
+              <tr>
+                <td colSpan={7} className="p-4 text-center text-gray-400">
+                  No products found.
+                </td>
+              </tr>
             ) : (
               products.map((product) => (
-                <tr key={product.product_id} className="border-b last:border-b-0">
+                <tr
+                  key={product.product_id}
+                  className="border-b last:border-b-0"
+                >
                   <td className="p-3">
-  <Link
-    to={`/products/${product.product_id}`}
-    className="inline-flex items-center gap-3 group"
-  >
-    <ProductImage
-      imageUrl={product.image_url}
-      alt={product.product_name}
-      className="w-10 h-10 rounded-lg"
-      iconSize={18}
-    />
+                    <Link
+                      to={`/products/${product.product_id}`}
+                      className="inline-flex items-center gap-3 group"
+                    >
+                      <ProductImage
+                        imageUrl={product.image_url}
+                        alt={product.product_name}
+                        className="w-10 h-10 rounded-lg"
+                        iconSize={18}
+                      />
 
-    <span className="font-medium text-[#003049] group-hover:text-[#f77f00] group-hover:underline">
-      {product.product_name}
-    </span>
-  </Link>
-</td>
+                      <span className="font-medium text-[#003049] group-hover:text-[#f77f00] group-hover:underline">
+                        {product.product_name}
+                      </span>
+                    </Link>
+                  </td>
                   <td className="p-3 text-gray-500">{product.sku}</td>
-                  <td className="p-3">{product.category?.category_name ?? "—"}</td>
-                  <td className="p-3">{Number(product.unit_price).toLocaleString()}</td>
+                  <td className="p-3">
+                    {product.category?.category_name ?? "—"}
+                  </td>
+                  <td className="p-3">
+                    {Number(product.unit_price).toLocaleString()}
+                  </td>
                   <td className="p-3">{product.stock_quantity}</td>
                   <td className="p-3">
                     <StockBadge
-  stockStatus={product.stock_status}
-  stockQuantity={product.stock_quantity}
-/>
+                      stockStatus={product.stock_status}
+                      stockQuantity={product.stock_quantity}
+                    />
                   </td>
                   <td className="p-3">
                     <div className="flex gap-2 text-gray-500">
-                      <Link to={`/products/${product.product_id}`} title="View" className="hover:text-[#003049]">
+                      <Link
+                        to={`/products/${product.product_id}`}
+                        title="View"
+                        className="hover:text-[#003049]"
+                      >
                         <Eye size={16} />
                       </Link>
-                      <button title="Edit" onClick={() => setPendingEdit(product)} className="hover:text-[#f77f00]">
+                      <button
+                        title="Edit"
+                        onClick={() => setPendingEdit(product)}
+                        className="hover:text-[#f77f00]"
+                      >
                         <Pencil size={16} />
                       </button>
-                      <button title="Delete" onClick={() => setPendingDelete(product)} className="hover:text-[#d62828]">
+                      <button
+                        title="Delete"
+                        onClick={() => setPendingDelete(product)}
+                        className="hover:text-[#d62828]"
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>

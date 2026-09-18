@@ -69,6 +69,7 @@ export default function AdminCustomersPage() {
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isLoading) return;
     setPage(1);
     setSearch(searchInput.trim());
   }
@@ -183,9 +184,10 @@ export default function AdminCustomersPage() {
 
           <button
             type="submit"
-            className="rounded-lg bg-[#f77f00] px-5 py-2 text-sm font-medium text-white hover:bg-[#d62828]"
+            disabled={isLoading}
+            className="rounded-lg bg-[#f77f00] px-5 py-2 text-sm font-medium text-white hover:bg-[#d62828] disabled:cursor-not-allowed disabled:bg-gray-300"
           >
-            Search
+            {isLoading ? "Searching..." : "Search"}
           </button>
         </form>
       </div>

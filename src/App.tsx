@@ -22,6 +22,7 @@ import WholesalerOrders from "./pages/wholesaler/WholesalerOrders";
 import ForgotPasswordPage from "./pages/ForgotPassword/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPassword/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmail/VerifyEmailPage";
+import ForbiddenPage from "./pages/ForbiddenPage";
 
 function App() {
   return (
@@ -190,6 +191,15 @@ function App() {
           }
         />
         <Route path="*" element={<NotFoundPage />} />
+
+        <Route
+          path="/forbidden"
+          element={
+            <ProtectedRoute>
+              <ForbiddenPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

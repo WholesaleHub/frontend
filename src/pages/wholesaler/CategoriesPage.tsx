@@ -43,7 +43,7 @@ export default function CategoriesPage() {
 
   async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!token || !newName.trim()) return;
+    if (!token || !newName.trim() || isSubmitting) return;
     setIsSubmitting(true);
     try {
       await createCategory(token, { category_name: newName.trim() });
