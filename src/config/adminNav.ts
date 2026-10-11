@@ -1,15 +1,51 @@
-import { Building2, ScrollText, UserRoundCog } from "lucide-react";
+import {
+  CalendarDays,
+  ClipboardList,
+  LayoutDashboard,
+  Package,
+  ReceiptText,
+  ScrollText,
+  Tags,
+  UserRoundCog,
+} from "lucide-react";
 
 export const adminNavItems = [
   {
-    path: "/dashboard/admin/customers",
-    label: "Customers",
-    icon: Building2,
+    path: "/dashboard/admin",
+    label: "Overview",
+    icon: LayoutDashboard,
   },
   {
     path: "/dashboard/admin/users",
     label: "Users",
     icon: UserRoundCog,
+  },
+  {
+    path: "/dashboard/admin/products",
+    label: "Products",
+    icon: Package,
+  },
+  {
+    path: "/dashboard/admin/categories",
+    label: "Categories",
+    icon: Tags,
+  },
+  {
+    path: "/dashboard/admin/orders",
+    label: "Orders",
+    icon: ClipboardList,
+  },
+  {
+    path: "/dashboard/admin/receipts",
+    label: "Receipts",
+    icon: ReceiptText,
+    comingSoon: true,
+  },
+  {
+    path: "/dashboard/admin/statements",
+    label: "Monthly Statements",
+    icon: CalendarDays,
+    comingSoon: true,
   },
   {
     path: "/dashboard/admin/audit",

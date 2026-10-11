@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { wholesalerNavItems } from "../../config/wholesalerNav";
+import { getOperationsNavigation } from "../../config/operationsNavigation";
 import { useAuth } from "../../context/AuthContext";
 import {
   getOrders,
@@ -56,7 +56,8 @@ function formatDate(value: string) {
 }
 
 export default function WholesalerOrders() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const operations = getOperationsNavigation(user?.role);
   const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<OrderStatus | "">("");
@@ -115,7 +116,7 @@ export default function WholesalerOrders() {
   }
 
   return (
-    <DashboardLayout navItems={wholesalerNavItems}>
+    <DashboardLayout navItems={operations.navItems}>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#003049]">Orders</h1>
@@ -266,7 +267,7 @@ export default function WholesalerOrders() {
                     </td>
                     <td className="px-4 py-4">
                       <Link
-                        to={`/dashboard/wholesaler/orders/${order.order_id}`}
+                        to={operations.orderDetailsPath(order.order_id)}
                         aria-label={`View order ${order.order_id}`}
                         className="inline-flex rounded-lg p-2 text-[#003049] hover:bg-blue-50"
                       >
@@ -334,7 +335,7 @@ export default function WholesalerOrders() {
                 </select>
 
                 <Link
-                  to={`/dashboard/wholesaler/orders/${order.order_id}`}
+                  to={operations.orderDetailsPath(order.order_id)}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 py-2 text-sm font-medium text-[#003049]"
                 >
                   <Eye size={16} />

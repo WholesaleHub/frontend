@@ -169,7 +169,7 @@ export default function ProductListingPage() {
 
       {!error && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
             {isLoading ? (
               Array.from({ length: PAGE_SIZE }).map((_, i) => (
                 <SkeletonCard key={i} />
@@ -184,21 +184,24 @@ export default function ProductListingPage() {
                 return (
                   <div
                     key={product.product_id}
-                    className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow"
+                    className="flex min-w-0 flex-col rounded-lg bg-white p-3 shadow transition-shadow hover:shadow-md sm:p-4"
                   >
-                    <Link to={`/products/${product.product_id}`}>
+                    <Link
+                      to={`/products/${product.product_id}`}
+                      className="flex min-w-0 flex-1 flex-col"
+                    >
                       <ProductImage
                         imageUrl={product.image_url}
                         alt={product.product_name}
-                        className="w-full h-36 rounded-lg mb-3"
-                        iconSize={40}
+                        className="mb-3 h-28 w-full rounded-lg sm:h-36"
+                        iconSize={32}
                       />
 
-                      <h2 className="font-semibold text-[#003049]">
+                      <h2 className="line-clamp-2 min-h-10 break-words text-sm font-semibold text-[#003049] sm:text-base">
                         {product.product_name}
                       </h2>
 
-                      <p className="text-[#f77f00] font-semibold mb-2">
+                      <p className="mb-2 text-sm font-semibold text-[#f77f00] sm:text-base">
                         Ksh {Number(product.unit_price).toLocaleString()}
                       </p>
 
@@ -219,9 +222,9 @@ export default function ProductListingPage() {
                           stock_quantity: product.stock_quantity,
                         })
                       }
-                      className="mt-4 w-full flex items-center justify-center gap-2 rounded-lg bg-[#f77f00] py-2 text-white hover:bg-[#d62828]"
+                      className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#f77f00] px-2 py-2 text-xs font-medium text-white hover:bg-[#d62828] sm:gap-2 sm:text-sm"
                     >
-                      <ShoppingCart size={18} />
+                      <ShoppingCart size={16} />
                       Add to Cart
                     </button>
                   </div>

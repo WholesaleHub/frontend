@@ -1,4 +1,5 @@
 import { extractErrorMessage } from "../utils/apiError";
+import type { Order } from "./orderService";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -163,4 +164,53 @@ export async function getCustomerById(
   });
 
   return handleResponse<CustomerDetails>(response, "Failed to load customer.");
+}
+
+export async function findCustomerByUserId(
+  token: string,
+  userId: string,
+): Promise<CustomerProfile | null> {
+  const limit = 100;
+  let page = 1;
+
+  while (true) {
+    const response = await getCustomers(token, {
+      page,
+      limit,
+    });
+
+    const customer = response.data.find(
+      (candidate) =>
+        candidate.user_id === userId || candidate.user?.id === userId,
+    );
+
+    if (customer) {
+      return customer;
+    }
+
+    if (page >= response.pagination.totalPages) {
+      return null;
+    }
+
+    page += 1;
+  }
+}
+
+export async function getCustomerOrders(
+  token: string,
+  customerId: number,
+): Promise<Order[]> {
+  const response = await fetch(
+    `${API_BASE_URL}/customers/${customerId}/orders`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  return handleResponse<Order[]>(
+    response,
+    "Failed to load the customer's orders.",
+  );
 }

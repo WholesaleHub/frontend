@@ -1,20 +1,26 @@
 import { useCallback, useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { wholesalerNavItems } from "../../config/wholesalerNav";
+import { getOperationsNavigation } from "../../config/operationsNavigation";
 import { useAuth } from "../../context/AuthContext";
-import { getCategories, createCategory } from "../../services/categoryService";
+import {
+  createCategory,
+  deleteCategory,
+  getCategories,
+} from "../../services/categoryService";
 import type { Category } from "../../services/productService";
 import ErrorModal from "../../components/ui/ErrorModal";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 export default function CategoriesPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const operations = getOperationsNavigation(user?.role);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [newName, setNewName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<Category | null>(null);
 
   const load = useCallback(async () => {
@@ -58,16 +64,42 @@ export default function CategoriesPage() {
     }
   }
 
+  async function confirmDelete() {
+    if (!token || !pendingDelete || isDeleting) return;
+
+    const categoryId = pendingDelete.category_id;
+
+    setIsDeleting(true);
+    setError("");
+
+    try {
+      await deleteCategory(token, categoryId);
+
+      setCategories((current) =>
+        current.filter((category) => category.category_id !== categoryId),
+      );
+
+      setPendingDelete(null);
+    } catch (err) {
+      setPendingDelete(null);
+      setError(
+        err instanceof Error ? err.message : "Failed to delete category.",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   if (error && !isLoading) {
     return (
-      <DashboardLayout navItems={wholesalerNavItems}>
-        <ErrorModal message={error} homePath="/dashboard/wholesaler" />
+      <DashboardLayout navItems={operations.navItems}>
+        <ErrorModal message={error} homePath={operations.dashboardPath} />
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout navItems={wholesalerNavItems}>
+    <DashboardLayout navItems={operations.navItems}>
       <h1 className="text-2xl font-bold text-[#003049] mb-6">Categories</h1>
 
       <form
@@ -122,9 +154,9 @@ export default function CategoriesPage() {
         isOpen={!!pendingDelete}
         title="Delete Category"
         message={`Delete "${pendingDelete?.category_name}"? Products using this category may be affected.`}
-        confirmLabel="Delete"
+        confirmLabel={isDeleting ? "Deleting..." : "Delete"}
         danger
-        onConfirm={() => setPendingDelete(null)}
+        onConfirm={() => void confirmDelete()}
         onCancel={() => setPendingDelete(null)}
       />
     </DashboardLayout>
