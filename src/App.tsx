@@ -18,6 +18,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminCustomersPage from "./pages/admin/AdminCustomersPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminAuditLogPage from "./pages/admin/AdminAuditLogPage";
+import AdminDashboard from "./pages/dashboards/AdminDashboard";
+import AdminUserDetailsPage from "./pages/admin/AdminUserDetailsPage";
 import WholesalerOrders from "./pages/wholesaler/WholesalerOrders";
 import ForgotPasswordPage from "./pages/ForgotPassword/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPassword/ResetPasswordPage";
@@ -160,7 +162,7 @@ function App() {
           path="/dashboard/admin"
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminCustomersPage />
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />
@@ -177,6 +179,64 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]}>
               <AdminUsersPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/admin/users/:id"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminUserDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/admin/products"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <WholesalerProducts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/products/new"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <ProductFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/products/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <ProductFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/categories"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <CategoriesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/orders"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <WholesalerOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/admin/orders/:id"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <OrderDetailsPage />
             </ProtectedRoute>
           }
         />

@@ -2,8 +2,7 @@ import { ArrowLeft, CheckCircle2, LoaderCircle, Package } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { retailerNavItems } from "../../config/retailerNav";
-import { wholesalerNavItems } from "../../config/wholesalerNav";
+import { getOperationsNavigation } from "../../config/operationsNavigation";
 import {
   orderStatusLabels,
   statusColors,
@@ -58,11 +57,8 @@ export default function OrderDetailsPage() {
   const [statusError, setStatusError] = useState("");
   const [statusSuccess, setStatusSuccess] = useState("");
 
-  const isWholesaler = user?.role === "WHOLESALER";
-  const navItems = isWholesaler ? wholesalerNavItems : retailerNavItems;
-  const ordersPath = isWholesaler
-    ? "/dashboard/wholesaler/orders"
-    : "/dashboard/retailer/orders";
+  const operations = getOperationsNavigation(user?.role);
+  const canManageOrders = operations.canManageOrders;
 
   const loadOrder = useCallback(async () => {
     if (!id || !token) {
@@ -75,7 +71,7 @@ export default function OrderDetailsPage() {
     setError("");
 
     try {
-      const data = isWholesaler
+      const data = canManageOrders
         ? await getOrderById(id, token)
         : await getMyOrderById(id, token);
       setOrder(data);
@@ -87,7 +83,7 @@ export default function OrderDetailsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [id, isWholesaler, token]);
+  }, [canManageOrders, id, token]);
 
   useEffect(() => {
     void loadOrder();
@@ -136,9 +132,9 @@ export default function OrderDetailsPage() {
     : -1;
 
   return (
-    <DashboardLayout navItems={navItems}>
+    <DashboardLayout navItems={operations.navItems}>
       <Link
-        to={ordersPath}
+        to={operations.ordersPath}
         className="mb-6 inline-flex items-center gap-2 text-sm text-[#003049] hover:text-[#f77f00]"
       >
         <ArrowLeft size={17} />
@@ -177,7 +173,7 @@ export default function OrderDetailsPage() {
               </div>
             </div>
 
-            {isWholesaler ? (
+            {canManageOrders ? (
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <label htmlFor="order-status" className="sr-only">
                   Order status
@@ -287,7 +283,7 @@ export default function OrderDetailsPage() {
             </section>
           )}
 
-          {isWholesaler && (statusError || statusSuccess) && (
+          {canManageOrders && (statusError || statusSuccess) && (
             <div
               className={`mx-6 mt-4 rounded-lg px-4 py-3 text-sm ${
                 statusError
@@ -303,7 +299,7 @@ export default function OrderDetailsPage() {
             </div>
           )}
 
-          {isWholesaler && order.customer && (
+          {canManageOrders && order.customer && (
             <section className="grid gap-4 border-b bg-gray-50 px-6 py-4 sm:grid-cols-2 lg:grid-cols-4">
               <div>
                 <p className="text-xs uppercase text-gray-400">Business</p>

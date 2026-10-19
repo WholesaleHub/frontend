@@ -8,6 +8,7 @@ import {
   updateUserStatus,
   type AdminUser,
 } from "../../services/userService";
+import { MemoryRouter } from "react-router-dom";
 
 vi.mock("../../context/AuthContext", () => ({
   useAuth: () => ({
@@ -63,7 +64,11 @@ const retailer: AdminUser = {
 };
 
 function renderPage() {
-  return render(<AdminUsersPage />);
+  return render(
+    <MemoryRouter>
+      <AdminUsersPage />
+    </MemoryRouter>,
+  );
 }
 
 describe("AdminUsersPage", () => {
@@ -85,6 +90,19 @@ describe("AdminUsersPage", () => {
       role: "",
       status: "",
     });
+  });
+
+  it("links each user to the administrator details page", async () => {
+    renderPage();
+
+    const profileLink = await screen.findByRole("link", {
+      name: "View details for Jane Retailer",
+    });
+
+    expect(profileLink).toHaveAttribute(
+      "href",
+      "/dashboard/admin/users/retailer-1",
+    );
   });
 
   it("sends search, role and status filters together", async () => {

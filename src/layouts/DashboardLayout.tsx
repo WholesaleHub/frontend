@@ -15,6 +15,7 @@ type NavItem = {
   path: string;
   label: string;
   icon: LucideIcon;
+  comingSoon?: boolean;
 };
 
 type DashboardLayoutProps = {
@@ -66,6 +67,23 @@ export default function DashboardLayout({
 
         <nav className="flex-1 p-2">
           {navItems.map((item) => {
+            if (item.comingSoon) {
+              return (
+                <div
+                  key={item.path}
+                  aria-disabled="true"
+                  className="mb-1 flex cursor-not-allowed items-center gap-3 rounded-lg px-4 py-3 text-sm text-white/45"
+                >
+                  <item.icon size={18} />
+
+                  <span className="flex-1">{item.label}</span>
+
+                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-white/60">
+                    Coming soon
+                  </span>
+                </div>
+              );
+            }
             const active =
               location.pathname === item.path ||
               (item.path !== "/dashboard/admin" &&

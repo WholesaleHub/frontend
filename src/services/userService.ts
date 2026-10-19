@@ -63,6 +63,20 @@ export async function getUsers(
   return handleResponse<AdminUser[]>(response, "Failed to load users.");
 }
 
+export async function getUserById(
+  token: string,
+  userId: string,
+): Promise<AdminUser> {
+  const users = await getUsers(token);
+  const user = users.find((candidate) => candidate.id === userId);
+
+  if (!user) {
+    throw new Error("User not found.");
+  }
+
+  return user;
+}
+
 export async function updateUserStatus(
   token: string,
   userId: string,

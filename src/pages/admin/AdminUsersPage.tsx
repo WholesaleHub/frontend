@@ -13,6 +13,7 @@ import {
   type UserRole,
   type UserStatus,
 } from "../../services/userService";
+import { Link } from "react-router-dom";
 
 const dateFormatter = new Intl.DateTimeFormat("en-KE", {
   day: "2-digit",
@@ -295,49 +296,87 @@ export default function AdminUsersPage() {
                     const isActive = managedUser.status === "ACTIVE";
                     const isCurrentUser = managedUser.id === currentUser?.id;
 
+                    const detailsPath = `/dashboard/admin/users/${managedUser.id}`;
+
                     return (
                       <tr
                         key={managedUser.id}
-                        className="border-t hover:bg-gray-50"
+                        className="border-t transition-colors hover:bg-gray-50"
                       >
-                        <td className="px-4 py-3">
-                          <p className="font-medium text-[#003049]">
-                            {managedUser.full_name}
-                            {isCurrentUser && (
-                              <span className="ml-2 rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700">
-                                You
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {managedUser.email}
-                          </p>
-                        </td>
-
-                        <td className="px-4 py-3 text-gray-600">
-                          {managedUser.phone || "—"}
-                        </td>
-
-                        <td className="px-4 py-3 capitalize text-gray-600">
-                          {managedUser.role.toLowerCase()}
-                        </td>
-
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                              isActive
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
+                        <td>
+                          <Link
+                            to={detailsPath}
+                            className="block px-4 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#f77f00]"
+                            aria-label={`View details for ${managedUser.full_name}`}
                           >
-                            {isActive ? "Active" : "Inactive"}
-                          </span>
+                            <p className="font-medium text-[#003049]">
+                              {managedUser.full_name}
+
+                              {isCurrentUser && (
+                                <span className="ml-2 rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700">
+                                  You
+                                </span>
+                              )}
+                            </p>
+
+                            <p className="text-xs text-gray-500">
+                              {managedUser.email}
+                            </p>
+                          </Link>
                         </td>
 
-                        <td className="px-4 py-3 text-gray-600">
-                          {dateFormatter.format(
-                            new Date(managedUser.created_at),
-                          )}
+                        <td>
+                          <Link
+                            to={detailsPath}
+                            className="block px-4 py-3 text-gray-600"
+                            tabIndex={-1}
+                            aria-hidden="true"
+                          >
+                            {managedUser.phone || "—"}
+                          </Link>
+                        </td>
+
+                        <td>
+                          <Link
+                            to={detailsPath}
+                            className="block px-4 py-3 capitalize text-gray-600"
+                            tabIndex={-1}
+                            aria-hidden="true"
+                          >
+                            {managedUser.role.toLowerCase()}
+                          </Link>
+                        </td>
+
+                        <td>
+                          <Link
+                            to={detailsPath}
+                            className="block px-4 py-3"
+                            tabIndex={-1}
+                            aria-hidden="true"
+                          >
+                            <span
+                              className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+                                isActive
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {isActive ? "Active" : "Inactive"}
+                            </span>
+                          </Link>
+                        </td>
+
+                        <td>
+                          <Link
+                            to={detailsPath}
+                            className="block px-4 py-3 text-gray-600"
+                            tabIndex={-1}
+                            aria-hidden="true"
+                          >
+                            {dateFormatter.format(
+                              new Date(managedUser.created_at),
+                            )}
+                          </Link>
                         </td>
 
                         <td className="px-4 py-3 text-right">
@@ -345,7 +384,7 @@ export default function AdminUsersPage() {
                             type="button"
                             onClick={() => setPendingUser(managedUser)}
                             disabled={updatingId !== null}
-                            className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50 ${
+                            className={`relative inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50 ${
                               isActive
                                 ? "border-red-200 text-red-600 hover:bg-red-50"
                                 : "border-green-200 text-green-600 hover:bg-green-50"
